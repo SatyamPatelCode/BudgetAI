@@ -1,0 +1,125 @@
+BudgetAI
+
+Vision:
+Create an app (IOS and Android support) which allows you to easily record spending. The app will have an easy to navigate UI. The focus of the app is to help people track their spending without hassling to create a spreadsheet or navigate a template. We want to make tracking your spending fun, easy, and quick. The main feature will be the dashboard which shows different charts and graphs showing how your spending has fluctuated over time. The charts can show different time periods (For example, biweekly, monthly, quarterly, etc.). There will be a table showing all the records you have put and also have filters to look through the data. The page where you add spending will have a button where you will be able to add the amount and a brief description of the reason for spending. You can either categorize it manually or automatically using AI or take a photo of the receipt and be analyzed by AI. Once the AI has created your spending chart and breakdown, the user is free to manually go through an edit as pleased, either breaking down the categories into smaller groups, group smaller categories up, or remove entries. This app is only meant to track spending. We also plan on having an AI summary of the spending monthly. We would like a notification system as well to notify the user that they have received their summary or anything else from the app. 
+
+Stack:
+Cross-platform mobile app: React Native + Expo (TypeScript) for iOS & Android
+UI & navigation: React Navigation + component library (Tamagui or React Native Paper)
+Charts & dashboard: Chart library (Victory Native or react-native-gifted-charts)
+Local-first storage: SQLite on-device (expo-sqlite) + schema/ORM (Drizzle)
+Backend & sync: Supabase (Postgres DB, Auth, Storage for receipts)
+AI services: Backend functions for auto-categorization + monthly spending summaries (most likely OpenAI API’s)
+Receipt capture & parsing: In-app camera + OCR (on-device or server) + AI structuring (using OpenAI API’s)
+Filtering & records table: Transaction list with search, date/category filters, exports later (AgGrid or other library for tables)
+Notifications: Push notifications for monthly summaries and key alerts
+
+Goals
+Be able to input manual spending
+Be able to persist results on database
+Have a skeleton of the UI fully finished
+Be able to use AI to categorize spending automatically
+Be able to see spending transactions and categories
+Be able to visualize spending on a chart
+Be able to visualize spending on a graph
+Be able to visualize all transactions by time periods
+Add summary functionality
+Add notifications
+Export to sheets functionality
+Be able to input receipts and read them to categorize spending
+Be able to fully use on phone
+
+Milestones 
+
+	Milestone for Feburary
+Have a skeleton of the UI fully finished
+Be able to input manual spending
+Be able to see spending transactions and categories
+Be able to persist results on database
+Add notifications
+	Milestone for March
+Be able to visualize spending on a chart
+Be able to visualize spending on a graph
+Be able to visualize all transactions by time periods
+Export to sheets functionality
+	Milestone for April
+Be able to use AI to categorize spending automatically 
+Add summary functionality
+Be able to input receipts and read them to categorize spending
+Be able to fully use on phone
+
+Current Team Members (Name,email,slack,credit-amount/pay)
+Emmanuel Usman: usmane@rpi.edu
+Satyam Patel: patels23@rpi.edu
+
+
+
+
+
+
+
+detailed split: 
+GitHub Copilot
+
+Here’s a concise split of work and an actionable plan so you and Satyam can start immediately without me changing files yet.
+
+High-level roles
+- Emmanuel: backend, data model, AI & infra owner.
+  - Supabase setup (DB schema, Auth, Storage), API endpoints/functions.
+  - Data model and sync strategy (SQLite <-> Supabase).
+  - AI backend for auto-categorization & monthly summaries (OpenAI integration).
+  - Push notifications backend + scheduling.
+  - CI/CD, secrets management, deployment (Fastlane/Codmagic/GHA).
+- Satyam: frontend, UX, client-side owner.
+  - Expo + React Native (TypeScript) app scaffold, navigation, screens.
+  - Local storage (expo-sqlite / Drizzle), transactions UI, forms.
+  - Charts/dashboard (Victory / gifted-charts), filtering, table/list UI.
+  - Receipt capture UI (camera) and hooking to OCR/upload.
+  - Accessibility, styling, and platform polish.
+
+February milestone (detailed task split)
+- Shared: create repo, branch strategy, issue templates.
+- Emmanuel:
+  - Create Supabase project, initial schema: transactions, categories, users, receipts.
+  - Define API surface + auth flows, create a simple REST/function to accept parsed receipts and return categories.
+  - Wire up push notification service credentials.
+- Satyam:
+  - Create Expo TypeScript project and commit initial scaffold.
+  - Implement core screens: Home (list), Add Transaction, Transaction detail, Category list.
+  - Implement local persistence with expo-sqlite and simple CRUD.
+  - Basic dashboard placeholder and wiring to navigate between screens.
+- Joint:
+  - Agree on transaction JSON schema and sync conflict rules.
+  - Add README with setup steps and run commands.
+
+March milestone (who does what)
+- Emmanuel:
+  - Implement AI categorization endpoint and monthly summary generator.
+  - Supabase trigger/functions for sync reconciliation and file storage for receipts.
+- Satyam:
+  - Implement charts, date-range filtering, exports (CSV).
+  - Integrate receipt capture and upload to backend.
+- Joint:
+  - End-to-end flow test: add transaction -> local DB -> sync -> AI categorize -> update UI.
+
+April milestone (who does what)
+- Emmanuel:
+  - Improve AI models, add batching and rate controls.
+  - Implement push notifications for summaries and key alerts.
+- Satyam:
+  - Polish UX, edge-case handling, full device testing (iOS & Android).
+  - Prepare store assets and release build process.
+- Joint:
+  - Final QA, privacy policy, and launch checklist.
+
+Collaboration & process (keep short)
+- Use GitHub Issues: create one issue per task; assign owner and estimate.
+- Branch per issue: feature/<issue-number>-short-name. PRs required, at least one review from the other.
+- Weekly sync (15–30 min) + triage of blockers.
+- Keep shared docs: schema.md (transaction shape), api.md (endpoints), run.md (local dev steps).
+
+Immediate first steps (today)
+- Satyam: init Expo TypeScript app locally and push scaffold branch.
+- Emmanuel: provision Supabase and create DB schema draft, push schema file.
+- Both: create 6 issues for Feb milestone tasks and assign.
+
