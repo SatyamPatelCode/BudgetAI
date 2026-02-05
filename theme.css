@@ -1,0 +1,22 @@
+:root {
+  /* Option 1: Intelligent Mint */
+  
+  /* Brand Identity */
+  --color-primary: #00D09C;       /* Vibrant Mint Green - Growth, Balance */
+  --color-secondary: #5E5CE6;     /* Indigo/Blurple - AI Features, Magic */
+  
+  /* Surfaces */
+  --color-background: #F8F9FA;    /* Off-white/Light Grey - Main Background */
+  --color-card: #FFFFFF;          /* Pure White - Cards, Rectangles */
+  
+  /* Typography */
+  --color-text-primary: #1A1D1E;  /* Almost Black - Headings, Main text */
+  --color-text-secondary: #6c757d;/* Muted Grey - Subtitles, Hints */
+  --color-text-inverse: #FFFFFF;  /* White - Text on Primary/Secondary buttons */
+  
+  /* Feedback / Semantic */
+  --color-success: #00D09C;       /* Income, Success states */
+  --color-error: #FF453A;         /* Expense, Deletion, Errors */
+  --color-warning: #FFCC00;       /* Alerts, Pending Actions */
+  --color-info: #5E5CE6;          /* Information, AI Suggestions */
+}
