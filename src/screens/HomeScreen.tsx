@@ -1,14 +1,15 @@
-import React from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  FlatList, 
+import React, { useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
   StatusBar,
   Dimensions
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Colors from '../../constants/Colors';
+import { supabase } from '../lib/supabaseClient'; // ✅ adjust if your filename differs
 
 // Mock Data for Transactions
 const TRANSACTIONS = [
@@ -23,7 +24,20 @@ const TRANSACTIONS = [
 const { width } = Dimensions.get('window');
 
 export default function HomeScreen() {
-  const theme = Colors.light; // Hardcoded to light for now, or use useColorScheme
+  const theme = Colors.light;
+
+  // 🔌 Supabase connection test
+  useEffect(() => {
+    (async () => {
+      console.log('▶️ testing supabase...');
+      const { data, error } = await supabase
+        .from('transactions') // ⬅️ replace with your real table name
+        .select('*')
+        .limit(1);
+
+      console.log('✅ supabase result:', { data, error });
+    })();
+  }, []);
 
   const renderTransaction = ({ item }: { item: typeof TRANSACTIONS[0] }) => (
     <View style={[styles.transactionRow, { backgroundColor: theme.card }]}>
@@ -39,35 +53,40 @@ export default function HomeScreen() {
 
   const Header = () => (
     <View style={styles.headerContainer}>
-      {/* Hello User Section */}
       <View style={styles.greetingContainer}>
         <Text style={[styles.greetingText, { color: theme.text }]}>Hello Satyam,</Text>
-        <Text style={[styles.subGreetingText, { color: theme.textSecondary }]}>Here is your spending overview</Text>
+        <Text style={[styles.subGreetingText, { color: theme.textSecondary }]}>
+          Here is your spending overview
+        </Text>
       </View>
 
-      {/* Chart Placeholder */}
       <View style={[styles.chartPlaceholder, { backgroundColor: theme.card }]}>
         <Text style={[styles.placeholderText, { color: theme.textSecondary }]}>
           [ Current Spending Chart ]
         </Text>
       </View>
 
-      {/* List Title */}
-      <Text style={[styles.sectionTitle, { color: theme.text }]}>Recent Transactions</Text>
+      <Text style={[styles.sectionTitle, { color: theme.text }]}>
+        Recent Transactions
+      </Text>
     </View>
   );
 
   const Footer = () => (
     <View style={styles.footerContainer}>
-      <Text style={[styles.placeholderText, { color: theme.textSecondary }]}>[ Footer Placeholder ]</Text>
+      <Text style={[styles.placeholderText, { color: theme.textSecondary }]}>
+        [ Footer Placeholder ]
+      </Text>
     </View>
   );
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]} edges={['right', 'left']}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: theme.background }]}
+      edges={['right', 'left']}
+    >
       <StatusBar barStyle="dark-content" />
-      
-      {/* Fake Nav Bar */}
+
       <View style={[styles.navBar, { borderBottomColor: '#e0e0e0' }]}>
         <Text style={[styles.navTitle, { color: theme.text }]}>BudgetAI</Text>
       </View>
@@ -95,7 +114,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderBottomWidth: 1,
     backgroundColor: 'transparent',
-    marginTop: 30, // Simulate status bar gap if not using SafeAreaView for top
+    marginTop: 30,
   },
   navTitle: {
     fontSize: 18,
