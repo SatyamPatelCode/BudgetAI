@@ -9,7 +9,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Colors from '../../constants/Colors';
-import { supabase } from '../lib/supabaseClient'; // ✅ adjust if your filename differs
+import { supabase } from '../lib/supabaseClient.js'; // ✅ adjust if your filename differs
+import { TouchableOpacity } from 'react-native';
 
 // Mock Data for Transactions
 const TRANSACTIONS = [
@@ -38,6 +39,10 @@ export default function HomeScreen() {
       console.log('✅ supabase result:', { data, error });
     })();
   }, []);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+  };
 
   const renderTransaction = ({ item }: { item: typeof TRANSACTIONS[0] }) => (
     <View style={[styles.transactionRow, { backgroundColor: theme.card }]}>
@@ -87,8 +92,12 @@ export default function HomeScreen() {
     >
       <StatusBar barStyle="dark-content" />
 
-      <View style={[styles.navBar, { borderBottomColor: '#e0e0e0' }]}>
+      <View style={[styles.navBar, { borderBottomColor: '#e0e0e0' }]}
+      >
         <Text style={[styles.navTitle, { color: theme.text }]}>BudgetAI</Text>
+        <TouchableOpacity onPress={handleSignOut} style={styles.signOutButton}>
+          <Text style={{ color: theme.textSecondary }}>Sign Out</Text>
+        </TouchableOpacity>
       </View>
 
       <FlatList
@@ -115,10 +124,18 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     backgroundColor: 'transparent',
     marginTop: 30,
+    flexDirection: 'row',
+    paddingHorizontal: 16,
   },
   navTitle: {
     fontSize: 18,
     fontWeight: '600',
+    flex: 1,
+    textAlign: 'left',
+  },
+  signOutButton: {
+    padding: 8,
+    justifyContent: 'center',
   },
   listContent: {
     paddingBottom: 40,
