@@ -9,8 +9,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Colors from '../../constants/Colors';
-import { supabase } from '../lib/supabaseClient.js'; // ✅ adjust if your filename differs
+import { supabase } from '../lib/supabaseClient.js'; // keep supabase for DB
 import { TouchableOpacity } from 'react-native';
+import { useAuth } from '@clerk/clerk-expo';
 
 // Mock Data for Transactions
 const TRANSACTIONS = [
@@ -26,6 +27,7 @@ const { width } = Dimensions.get('window');
 
 export default function HomeScreen() {
   const theme = Colors.light;
+  const { signOut } = useAuth();
 
   // 🔌 Supabase connection test
   useEffect(() => {
@@ -41,7 +43,13 @@ export default function HomeScreen() {
   }, []);
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
+    try {
+      await signOut();
+    } catch (e) {
+      console.warn('Clerk signOut error', e);
+      // fallback to supabase sign out
+      try { await supabase.auth.signOut(); } catch (err) {}
+    }
   };
 
   const renderTransaction = ({ item }: { item: typeof TRANSACTIONS[0] }) => (

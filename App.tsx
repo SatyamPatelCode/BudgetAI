@@ -1,65 +1,52 @@
-import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import React, { useEffect } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import { supabase } from './src/lib/supabaseClient';
+import { ClerkProvider, SignedIn, SignedOut } from '@clerk/clerk-expo';
 import HomeScreen from './src/screens/HomeScreen';
-import LoginScreen from './src/screens/LoginScreen';
-import SignUpScreen from './src/screens/SignUpScreen';
+import ClerkAuthScreen from './src/screens/ClerkAuthScreen';
+import * as Linking from 'expo-linking';
+
+
+const PUBLISHABLE_KEY =
+  (process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY as string) ||
+  (process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY as string) ||
+  '';
+
+if (!PUBLISHABLE_KEY) {
+  console.warn('Missing Clerk publishable key. Set EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY in your .env');
+}
 
 export default function App() {
-  const [session, setSession] = useState<any | null>(undefined);
-  const [showSignUp, setShowSignUp] = useState(false);
-
   useEffect(() => {
+    // debug deep link handling
     (async () => {
-      const { data } = await supabase.auth.getSession();
-      setSession((data as any)?.session ?? null);
+      const initialUrl = await Linking.getInitialURL();
+      console.log('initial deep link:', initialUrl);
     })();
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session ?? null);
-    });
+    const onUrl = (event: { url: string }) => {
+      console.log('incoming deep link:', event.url);
+    };
+    const sub = Linking.addEventListener('url', onUrl as any);
 
     return () => {
-      try {
-        (listener as any)?.subscription?.unsubscribe?.();
-      } catch (e) {}
+      try { sub.remove(); } catch (e) {}
     };
   }, []);
 
-  const refreshSession = async () => {
-    const { data } = await supabase.auth.getSession();
-    setSession((data as any)?.session ?? null);
-  };
-
-  if (session === undefined) {
-    return (
-      <SafeAreaProvider>
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <ActivityIndicator />
-        </View>
-      </SafeAreaProvider>
-    );
-  }
-
-  if (session) {
-    return (
-      <SafeAreaProvider>
-        <HomeScreen />
-      </SafeAreaProvider>
-    );
-  }
-
-  // not signed in
   return (
-    <SafeAreaProvider>
-      {showSignUp ? (
-        <SignUpScreen onSwitchToSignIn={() => setShowSignUp(false)} />
-      ) : (
-        <LoginScreen onSignIn={refreshSession} onSwitchToSignUp={() => setShowSignUp(true)} />
-      )}
-      <StatusBar style="auto" />
-    </SafeAreaProvider>
+    <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
+      <SafeAreaProvider>
+        <SignedIn>
+          <HomeScreen />
+        </SignedIn>
+
+        <SignedOut>
+          <ClerkAuthScreen />
+        </SignedOut>
+
+        <StatusBar style="auto" />
+      </SafeAreaProvider>
+    </ClerkProvider>
   );
 }
