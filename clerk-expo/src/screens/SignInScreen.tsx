@@ -7,11 +7,13 @@ export default function SignInScreen({ onSignUpPress }: { onSignUpPress: () => v
   
   const [emailAddress, setEmailAddress] = useState('');
   const [password, setPassword] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
   const onSignInPress = async () => {
     if (!isLoaded) {
       return;
     }
+    setErrorMessage(''); // Clear previous errors
 
     try {
       const completeSignIn = await signIn.create({
@@ -22,7 +24,9 @@ export default function SignInScreen({ onSignUpPress }: { onSignUpPress: () => v
       // This indicates the user is signed in
       await setActive({ session: completeSignIn.createdSessionId });
     } catch (err: any) {
-      Alert.alert('Error', err.errors ? err.errors[0].message : err.message);
+      const msg = err.errors ? err.errors[0].message : err.message;
+      setErrorMessage(msg);
+      // Alert.alert('Error', msg); // Optional: keep or remove alert
     }
   };
 
@@ -48,6 +52,8 @@ export default function SignInScreen({ onSignUpPress }: { onSignUpPress: () => v
           style={styles.input}
         />
       </View>
+
+      {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
 
       <Button title="Sign In" onPress={onSignInPress} />
       
@@ -86,5 +92,10 @@ const styles = StyleSheet.create({
     footer: {
         marginTop: 20,
         alignItems: 'center',
+    },
+    errorText: {
+        color: 'red',
+        marginBottom: 10,
+        textAlign: 'center',
     }
 });

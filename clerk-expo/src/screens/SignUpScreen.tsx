@@ -8,24 +8,21 @@ export default function SignUpScreen({ onSignInPress }: { onSignInPress: () => v
   const [emailAddress, setEmailAddress] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
   const [pendingVerification, setPendingVerification] = useState(false);
   const [code, setCode] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
   const onSignUpPress = async () => {
     if (!isLoaded) {
       return;
     }
+    setErrorMessage('');
 
     try {
       await signUp.create({
         emailAddress,
         password,
         username,
-        // Only send checks if they have values. 
-        // If phone_number is disabled in Clerk dashboard, sending it might cause an error
-        // even if it's empty string.
-        ...(phoneNumber ? { phoneNumber } : {}),
       });
 
       await signUp.prepareEmailAddressVerification({ strategy: 'email_code' });
@@ -35,7 +32,8 @@ export default function SignUpScreen({ onSignInPress }: { onSignInPress: () => v
       // See https://clerk.com/docs/custom-flows/error-handling
       // for more info on error handling
       console.error(JSON.stringify(err, null, 2));
-      Alert.alert('Error', err.errors ? err.errors[0].message : err.message);
+      const msg = err.errors ? err.errors[0].message : err.message;
+      setErrorMessage(msg);
     }
   };
 
@@ -43,6 +41,7 @@ export default function SignUpScreen({ onSignInPress }: { onSignInPress: () => v
     if (!isLoaded) {
       return;
     }
+    setErrorMessage('');
 
     try {
       const completeSignUp = await signUp.attemptEmailAddressVerification({
@@ -60,18 +59,16 @@ export default function SignUpScreen({ onSignInPress }: { onSignInPress: () => v
         // if you don't want to build a phone verification flow right now.
         
         console.error(JSON.stringify(completeSignUp, null, 2));
-        Alert.alert(
-          'Missing Requirements', 
-          'Your account has been created but requires additional verification (e.g. Phone Number). Please adjust your Clerk Dashboard settings to only require Email verification for a simpler flow, or implement phone verification.'
-        );
+        setErrorMessage('Your account has been created but requires additional verification (e.g. Phone Number). Please adjust your Clerk Dashboard settings to only require Email verification for a simpler flow, or implement phone verification.');
       } else {
         console.error(JSON.stringify(completeSignUp, null, 2));
-        Alert.alert('Error', 'Verification failed. Please try again.');
+        setErrorMessage('Verification failed. Please try again.');
         // logic for incomplete sign up
       }
     } catch (err: any) {
       console.error(JSON.stringify(err, null, 2));
-      Alert.alert('Error', err.errors ? err.errors[0].message : err.message);
+      const msg = err.errors ? err.errors[0].message : err.message;
+      setErrorMessage(msg);
     }
   };
 
@@ -101,16 +98,6 @@ export default function SignUpScreen({ onSignInPress }: { onSignInPress: () => v
 
           <View>
             <TextInput
-              value={phoneNumber}
-              placeholder="Phone Number (Optional)"
-              placeholderTextColor="#000"
-              onChangeText={(phone) => setPhoneNumber(phone)}
-              style={styles.input}
-            />
-          </View>
-
-          <View>
-            <TextInput
               value={password}
               placeholder="Password..."
               placeholderTextColor="#000"
@@ -119,6 +106,8 @@ export default function SignUpScreen({ onSignInPress }: { onSignInPress: () => v
               style={styles.input}
             />
           </View>
+
+          {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
 
           <Button title="Sign Up" onPress={onSignUpPress} />
           
@@ -171,5 +160,10 @@ const styles = StyleSheet.create({
     footer: {
         marginTop: 20,
         alignItems: 'center',
+    },
+    errorText: {
+        color: 'red',
+        marginBottom: 10,
+        textAlign: 'center',
     }
 });
