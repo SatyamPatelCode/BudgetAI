@@ -1,3 +1,6 @@
+// This file is deprecated. The active HomeScreen is located at:
+// clerk-expo/src/screens/HomeScreen.tsx
+
 import React from 'react';
 import { 
   View, 
