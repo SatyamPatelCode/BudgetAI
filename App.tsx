@@ -1,16 +1,29 @@
-import { useState, useCallback } from 'react';
+import React, { useEffect, useCallback, useState } from 'react';
 import { View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import HomeScreen from './src/screens/HomeScreen';
+import SignInScreen from './src/screens/SignInScreen';
+import SignUpScreen from './src/screens/SignUpScreen';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts, Poppins_400Regular, Poppins_700Bold } from '@expo-google-fonts/poppins';
 import * as SplashScreen from 'expo-splash-screen';
-import HomeScreen from './src/screens/HomeScreen';
-import AddTransactionScreen from './src/screens/AddTransactionScreen';
+import { ClerkProvider, SignedIn, SignedOut } from '@clerk/clerk-expo';
+import { tokenCache } from './cache';
+import AddTransactionScreen from './src/screens/AddTransactionScreen'; // Import the new screen
+
+const PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
+
+if (!PUBLISHABLE_KEY) {
+  console.error('Missing Clerk Publishable Key in .env');
+}
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
 
 export default function App() {
+  const [showSignUp, setShowSignUp] = useState(false);
+  const [currentScreen, setCurrentScreen] = useState<'Home' | 'AddTransaction'>('Home'); // State for local navigation
+
   const [fontsLoaded] = useFonts({
     Poppins_400Regular,
     Poppins_700Bold,
@@ -29,13 +42,25 @@ export default function App() {
   }
 
   return (
-    <SafeAreaProvider onLayout={onLayoutRootView}>
-      {currentScreen === 'Home' ? (
-        <HomeScreen onNavigateToAdd={() => setCurrentScreen('AddTransaction')} />
-      ) : (
-        <AddTransactionScreen onNavigateHome={() => setCurrentScreen('Home')} />
-      )}
-      <StatusBar style="auto" />
-    </SafeAreaProvider>
+    <ClerkProvider publishableKey={PUBLISHABLE_KEY!} tokenCache={tokenCache}>
+      <SafeAreaProvider onLayout={onLayoutRootView}>
+        <SignedIn>
+          {/* Simple navigation switch */}
+          {currentScreen === 'Home' ? (
+             <HomeScreen onNavigateToAdd={() => setCurrentScreen('AddTransaction')} />
+          ) : (
+             <AddTransactionScreen onNavigateHome={() => setCurrentScreen('Home')} />
+          )}
+        </SignedIn>
+        <SignedOut>
+          {showSignUp ? (
+            <SignUpScreen onSignInPress={() => setShowSignUp(false)} />
+          ) : (
+            <SignInScreen onSignUpPress={() => setShowSignUp(true)} />
+          )}
+        </SignedOut>
+        <StatusBar style="auto" />
+      </SafeAreaProvider>
+    </ClerkProvider>
   );
 }

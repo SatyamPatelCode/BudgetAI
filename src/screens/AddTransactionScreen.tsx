@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SimpleLineIcons, Ionicons } from '@expo/vector-icons';
-import Colors from '../../constants/Colors';
+import Colors from '../constants/Colors';
 
 const logo = require('../../assets/BudgetAI_BWTransparent.png');
 
@@ -168,8 +168,11 @@ export default function AddTransactionScreen({ onNavigateHome }: AddTransactionS
   ];
 
   return (
-    <View style={{ flex: 1, backgroundColor: theme.primary }} {...panResponder.panHandlers}>
+    <View style={{ flex: 1, backgroundColor: theme.primary }}>
       {renderSidebar()}
+      {/* We attach panHandlers to a container View that fills the draggable area */}
+      <View style={StyleSheet.absoluteFill} {...panResponder.panHandlers} pointerEvents="box-none" />
+
       <SafeAreaView style={{ flex: 1 }} edges={['top', 'left', 'right']}>
         <StatusBar barStyle="dark-content" />
         
