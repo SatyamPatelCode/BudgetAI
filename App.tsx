@@ -9,6 +9,7 @@ import { useFonts, Poppins_400Regular, Poppins_700Bold } from '@expo-google-font
 import * as SplashScreen from 'expo-splash-screen';
 import { ClerkProvider, SignedIn, SignedOut } from '@clerk/clerk-expo';
 import { tokenCache } from './cache';
+import AddTransactionScreen from './src/screens/AddTransactionScreen'; // Import the new screen
 
 const PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
@@ -21,6 +22,8 @@ SplashScreen.preventAutoHideAsync();
 
 export default function App() {
   const [showSignUp, setShowSignUp] = useState(false);
+  const [currentScreen, setCurrentScreen] = useState<'Home' | 'AddTransaction'>('Home'); // State for local navigation
+
   const [fontsLoaded] = useFonts({
     Poppins_400Regular,
     Poppins_700Bold,
@@ -40,7 +43,12 @@ export default function App() {
     <ClerkProvider publishableKey={PUBLISHABLE_KEY!} tokenCache={tokenCache}>
       <SafeAreaProvider onLayout={onLayoutRootView}>
         <SignedIn>
-          <HomeScreen />
+          {/* Simple navigation switch */}
+          {currentScreen === 'Home' ? (
+             <HomeScreen onNavigateToAdd={() => setCurrentScreen('AddTransaction')} />
+          ) : (
+             <AddTransactionScreen onNavigateHome={() => setCurrentScreen('Home')} />
+          )}
         </SignedIn>
         <SignedOut>
           {showSignUp ? (
