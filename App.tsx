@@ -1,22 +1,22 @@
-import React, { useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import HomeScreen from './src/screens/HomeScreen';
 import { StatusBar } from 'expo-status-bar';
-import { useFonts, Poppins_400Regular, Poppins_700Bold } from '@expo-google-fonts/poppins'; // Correct import path
+import { useFonts, Poppins_400Regular, Poppins_700Bold } from '@expo-google-fonts/poppins';
 import * as SplashScreen from 'expo-splash-screen';
+import HomeScreen from './src/screens/HomeScreen';
+import AddTransactionScreen from './src/screens/AddTransactionScreen';
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
-
-// Force reload trigger
-console.log('App reloaded');
 
 export default function App() {
   const [fontsLoaded] = useFonts({
     Poppins_400Regular,
     Poppins_700Bold,
   });
+
+  const [currentScreen, setCurrentScreen] = useState<'Home' | 'AddTransaction'>('Home');
 
   const onLayoutRootView = useCallback(async () => {
     if (fontsLoaded) {
@@ -30,7 +30,11 @@ export default function App() {
 
   return (
     <SafeAreaProvider onLayout={onLayoutRootView}>
-      <HomeScreen />
+      {currentScreen === 'Home' ? (
+        <HomeScreen onNavigateToAdd={() => setCurrentScreen('AddTransaction')} />
+      ) : (
+        <AddTransactionScreen onNavigateHome={() => setCurrentScreen('Home')} />
+      )}
       <StatusBar style="auto" />
     </SafeAreaProvider>
   );
