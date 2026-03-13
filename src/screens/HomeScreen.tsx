@@ -31,7 +31,11 @@ const TRANSACTIONS = [
 const { width } = Dimensions.get('window');
 const SIDEBAR_WIDTH = width * 0.75; // Sidebar takes 75% of screen width
 
-export default function HomeScreen() {
+interface HomeScreenProps {
+  onNavigateToAdd: () => void;
+}
+
+export default function HomeScreen({ onNavigateToAdd }: HomeScreenProps) {
   const theme = Colors.light; 
   // We keep track if the sidebar is visually open for other logic (like back button handling if we had it)
   // But purely for animation we rely on the Animated.Value
@@ -254,7 +258,7 @@ export default function HomeScreen() {
 
            <TouchableOpacity 
             style={[styles.fab, { backgroundColor: theme.secondary }]}
-            onPress={() => console.log('Navigate to Add Transaction')}
+            onPress={onNavigateToAdd}
            >
             <Ionicons name='add' size={32} color='white' />
           </TouchableOpacity>
