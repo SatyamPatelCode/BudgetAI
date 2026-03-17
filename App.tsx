@@ -29,8 +29,6 @@ export default function App() {
     Poppins_700Bold,
   });
 
-  const [currentScreen, setCurrentScreen] = useState<'Home' | 'AddTransaction'>('Home');
-
   const onLayoutRootView = useCallback(async () => {
     if (fontsLoaded) {
       await SplashScreen.hideAsync();
