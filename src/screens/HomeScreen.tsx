@@ -219,8 +219,8 @@ export default function HomeScreen({ onNavigateToAdd, onNavigateToHistory }: Hom
   };
 
   const renderTransaction = ({ item }: { item: any }) => (
-    <View style={[styles.transactionRow, { borderColor: theme.secondary }]}>
-      <TouchableOpacity style={styles.deleteButton} onPress={() => confirmDelete(item.id)}>
+    <View style={[styles.transactionRow, { borderColor: theme.secondary, backgroundColor: theme.card }]}>
+      <TouchableOpacity style={[styles.deleteButton, { backgroundColor: theme.card }]} onPress={() => confirmDelete(item.id)}>
         <Ionicons name='close-circle' size={20} color={theme.error} />
       </TouchableOpacity>
       
@@ -250,7 +250,7 @@ export default function HomeScreen({ onNavigateToAdd, onNavigateToHistory }: Hom
         <Text style={[styles.subGreetingText, { color: theme.text }]}>Here is your spending overview</Text>
       </View>
 
-      <View style={[styles.chartPlaceholder, { backgroundColor: '#E0E0E0' }]} />
+      <View style={[styles.chartPlaceholder, { backgroundColor: theme.card }]} />
 
       <View style={styles.listHeaderRow}>
         <Text style={[styles.sectionTitle, { color: theme.secondary }]}>Recent Transactions:</Text>
@@ -264,10 +264,10 @@ export default function HomeScreen({ onNavigateToAdd, onNavigateToHistory }: Hom
         </TouchableOpacity>
       </View>
 
-      <View style={[styles.columnHeaderRow, { borderColor: theme.secondary }]}>
-        <Text style={[styles.columnHeaderText, { flex: 2, textAlign: 'center' }]}>Name</Text>
-        <Text style={[styles.columnHeaderText, { flex: 2, textAlign: 'center' }]}>Category</Text>
-        <Text style={[styles.columnHeaderText, { flex: 1, textAlign: 'center' }]}>Cost</Text>
+      <View style={[styles.columnHeaderRow, { borderColor: theme.secondary, backgroundColor: theme.card }]}>
+        <Text style={[styles.columnHeaderText, { flex: 2, textAlign: 'center', color: theme.text }]}>Name</Text>
+        <Text style={[styles.columnHeaderText, { flex: 2, textAlign: 'center', color: theme.text }]}>Category</Text>
+        <Text style={[styles.columnHeaderText, { flex: 1, textAlign: 'center', color: theme.text }]}>Cost</Text>
       </View>
     </View>
   );
@@ -353,5 +353,5 @@ const styles = StyleSheet.create({
   sidebarIcon: { height: 60, width: 200 },
   sidebarContent: { flex: 1, padding: 20, backgroundColor: 'white' },
   sidebarButton: { paddingVertical: 15, borderRadius: 12, alignItems: 'center', marginBottom: 15 },
-  sidebarButtonText: { fontSize: 18, fontWeight: 'bold', color: '#6B4EFF', fontFamily: 'Poppins_700Bold' },
+  sidebarButtonText: { fontSize: 18, fontWeight: 'bold', color: '#5E5CE6', fontFamily: 'Poppins_700Bold' },
 });

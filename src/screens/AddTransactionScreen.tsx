@@ -286,8 +286,8 @@ export default function AddTransactionScreen({ onNavigateHome, onNavigateToHisto
           <View style={{ width: 24 }} /> 
         </View>
 
-        {/* Content - White Background */}
-        <View style={styles.contentContainer}>
+        {/* Content */}
+        <View style={[styles.contentContainer, { backgroundColor: theme.background }]}>
           <ScrollView contentContainerStyle={styles.scrollContent}>
             
             <Text style={[styles.sectionTitle, { color: theme.secondary }]}>
@@ -297,7 +297,7 @@ export default function AddTransactionScreen({ onNavigateHome, onNavigateToHisto
             {/* Input Fields */}
             <View style={styles.inputGroup}>
               <TextInput
-                style={[styles.input, { borderColor: theme.secondary }]}
+                style={[styles.input, { borderColor: theme.secondary, color: theme.text, backgroundColor: theme.card }]}
                 placeholder="Name"
                 placeholderTextColor={theme.secondary}
                 value={name}
@@ -305,7 +305,7 @@ export default function AddTransactionScreen({ onNavigateHome, onNavigateToHisto
               />
               
               <TextInput
-                style={[styles.input, { borderColor: theme.secondary }]}
+                style={[styles.input, { borderColor: theme.secondary, color: theme.text, backgroundColor: theme.card }]}
                 placeholder="Cost"
                 placeholderTextColor={theme.secondary}
                 value={cost}
@@ -317,11 +317,11 @@ export default function AddTransactionScreen({ onNavigateHome, onNavigateToHisto
                 <TextInput
                   style={[
                     styles.input, 
-                    { flex: 1, marginRight: 10, borderColor: theme.secondary },
-                    useAI && styles.categoryDisabled
+                    { flex: 1, marginRight: 10, borderColor: theme.secondary, color: theme.text, backgroundColor: theme.card },
+                    useAI && [styles.categoryDisabled, { backgroundColor: theme.background, color: theme.textSecondary }]
                   ]}
                   placeholder="Category"
-                  placeholderTextColor={useAI ? "#CCC" : theme.secondary}
+                  placeholderTextColor={useAI ? theme.textSecondary : theme.secondary}
                   value={category}
                   onChangeText={setCategory}
                   editable={!useAI}
@@ -591,7 +591,7 @@ const styles = StyleSheet.create({
   sidebarButtonText: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#6B4EFF', 
+    color: '#5E5CE6', 
     fontFamily: 'Poppins_700Bold',
   },
   categoryDisabled: {

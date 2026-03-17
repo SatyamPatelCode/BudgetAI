@@ -8,8 +8,7 @@ import SignUpScreen from './src/screens/SignUpScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts, Poppins_400Regular, Poppins_700Bold } from '@expo-google-fonts/poppins';
-import * as SplashScreen from 'expo-splash-screen';
-import { ClerkProvider, SignedIn, SignedOut } from '@clerk/clerk-expo';
+import * as SplashScreen from 'expo-splash-screen';import Colors from './src/constants/Colors';import { ClerkProvider, SignedIn, SignedOut } from '@clerk/clerk-expo';
 import { tokenCache } from './cache';
 import AddTransactionScreen from './src/screens/AddTransactionScreen';
 import TransactionsScreen from './src/screens/TransactionsScreen'; // Import new screen
@@ -26,6 +25,13 @@ SplashScreen.preventAutoHideAsync();
 export default function App() {
   const [showSignUp, setShowSignUp] = useState(false);
   const [currentScreen, setCurrentScreen] = useState<'Home' | 'AddTransaction' | 'History'>('Home'); // Updated state
+  const [themeName, setThemeName] = useState<'light' | 'dark'>('dark');
+  const theme = Colors[themeName];
+  const isDarkMode = themeName === 'dark';
+
+  const toggleTheme = () => {
+    setThemeName(prev => prev === 'light' ? 'dark' : 'light');
+  };
 
   const [fontsLoaded] = useFonts({
     Poppins_400Regular,
@@ -66,9 +72,9 @@ export default function App() {
         </SignedIn>
         <SignedOut>
           {showSignUp ? (
-            <SignUpScreen onSignInPress={() => setShowSignUp(false)} />
+            <SignUpScreen onSignInPress={() => setShowSignUp(false)} theme={theme} />
           ) : (
-            <SignInScreen onSignUpPress={() => setShowSignUp(true)} />
+            <SignInScreen onSignUpPress={() => setShowSignUp(true)} theme={theme} />
           )}
         </SignedOut>
         <StatusBar style={isDarkMode ? "light" : "dark"} />

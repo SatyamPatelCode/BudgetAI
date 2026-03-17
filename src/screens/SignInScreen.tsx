@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, ScrollView, Alert } from 'react-native';
 import { useSignIn } from '@clerk/clerk-expo';
+import Colors from '../constants/Colors';
 
-export default function SignInScreen({ onSignUpPress }: { onSignUpPress: () => void }) {
+export default function SignInScreen({ onSignUpPress, theme }: { onSignUpPress: () => void, theme: typeof Colors.light }) {
   const { signIn, setActive, isLoaded } = useSignIn();
   
   const [emailAddress, setEmailAddress] = useState('');
@@ -81,48 +82,48 @@ export default function SignInScreen({ onSignUpPress }: { onSignUpPress: () => v
     return (
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.container}
+        style={[styles.container, { backgroundColor: theme.background }]}
       >
         <ScrollView contentContainerStyle={styles.scrollContainer}>
-          <Text style={styles.title}>Reset Password</Text>
-          <Text style={styles.subtitle}>Enter the code sent to {emailAddress}</Text>
+          <Text style={[styles.title, { color: theme.text }]}>Reset Password</Text>
+          <Text style={[styles.subtitle, { color: theme.textSecondary }]}>Enter the code sent to {emailAddress}</Text>
 
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>Reset Code</Text>
+            <Text style={[styles.label, { color: theme.text }]}>Reset Code</Text>
             <TextInput
               value={resetCode}
               placeholder="Enter 6-digit code"
-              placeholderTextColor="#888"
+              placeholderTextColor={theme.textSecondary}
               onChangeText={(code) => setResetCode(code)}
-              style={styles.input}
+              style={[styles.input, { backgroundColor: theme.card, borderColor: theme.secondary, color: theme.text }]}
               keyboardType="number-pad"
             />
           </View>
 
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>New Password</Text>
+            <Text style={[styles.label, { color: theme.text }]}>New Password</Text>
             <TextInput
               value={newPassword}
               placeholder="Enter new password"
-              placeholderTextColor="#888"
+              placeholderTextColor={theme.textSecondary}
               secureTextEntry={true}
               onChangeText={(pass) => setNewPassword(pass)}
-              style={styles.input}
+              style={[styles.input, { backgroundColor: theme.card, borderColor: theme.secondary, color: theme.text }]}
             />
           </View>
 
           {errorMessage ? (
-            <View style={styles.errorContainer}>
-              <Text style={styles.errorText}>{errorMessage}</Text>
+            <View style={[styles.errorContainer, { borderColor: theme.error, backgroundColor: theme.card }]}>
+              <Text style={[styles.errorText, { color: theme.error }]}>{errorMessage}</Text>
             </View>
           ) : null}
 
-          <TouchableOpacity style={styles.button} onPress={onResetPassword}>
+          <TouchableOpacity style={[styles.button, { backgroundColor: theme.secondary }]} onPress={onResetPassword}>
             <Text style={styles.buttonText}>Set New Password</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={[styles.button, { backgroundColor: 'transparent', marginTop: 10 }]} onPress={() => setIsResettingPassword(false)}>
-            <Text style={[styles.buttonText, { color: '#666' }]}>Cancel</Text>
+            <Text style={[styles.buttonText, { color: theme.textSecondary }]}>Cancel</Text>
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -132,54 +133,54 @@ export default function SignInScreen({ onSignUpPress }: { onSignUpPress: () => v
   return (
     <KeyboardAvoidingView 
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.container}
+      style={[styles.container, { backgroundColor: theme.background }]}
     >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <Text style={styles.title}>Welcome Back</Text>
-        <Text style={styles.subtitle}>Please sign in to continue</Text>
+        <Text style={[styles.title, { color: theme.text }]}>Welcome Back</Text>
+        <Text style={[styles.subtitle, { color: theme.textSecondary }]}>Please sign in to continue</Text>
 
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>Email</Text>
+          <Text style={[styles.label, { color: theme.text }]}>Email</Text>
           <TextInput
             autoCapitalize="none"
             value={emailAddress}
             placeholder="Enter your email"
-            placeholderTextColor="#888"
+            placeholderTextColor={theme.textSecondary}
             onChangeText={(emailAddress) => setEmailAddress(emailAddress)}
-            style={styles.input}
+            style={[styles.input, { backgroundColor: theme.card, borderColor: theme.secondary, color: theme.text }]}
           />
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>Password</Text>
+          <Text style={[styles.label, { color: theme.text }]}>Password</Text>
           <TextInput
             value={password}
             placeholder="Enter your password"
-            placeholderTextColor="#888"
+            placeholderTextColor={theme.textSecondary}
             secureTextEntry={true}
             onChangeText={(password) => setPassword(password)}
-            style={styles.input}
+            style={[styles.input, { backgroundColor: theme.card, borderColor: theme.secondary, color: theme.text }]}
           />
         </View>
 
         <TouchableOpacity onPress={onRequestReset} style={{ alignSelf: 'flex-end', marginBottom: 20 }}>
-            <Text style={{ color: '#007AFF', fontSize: 14 }}>Forgot Password?</Text>
+            <Text style={{ color: theme.secondary, fontSize: 14 }}>Forgot Password?</Text>
         </TouchableOpacity>
 
         {errorMessage ? (
-          <View style={styles.errorContainer}>
-            <Text style={styles.errorText}>{errorMessage}</Text>
+          <View style={[styles.errorContainer, { borderColor: theme.error, backgroundColor: theme.card }]}>
+            <Text style={[styles.errorText, { color: theme.error }]}>{errorMessage}</Text>
           </View>
         ) : null}
 
-        <TouchableOpacity style={styles.button} onPress={onSignInPress}>
+        <TouchableOpacity style={[styles.button, { backgroundColor: theme.secondary }]} onPress={onSignInPress}>
           <Text style={styles.buttonText}>Sign In</Text>
         </TouchableOpacity>
         
         <View style={styles.footer}>
-            <Text style={styles.footerText}>Don't have an account?</Text>
+            <Text style={[styles.footerText, { color: theme.textSecondary }]}>Don't have an account?</Text>
             <TouchableOpacity onPress={onSignUpPress}>
-              <Text style={[styles.footerLink, { color: '#00D09C' }]}>Sign Up</Text>
+              <Text style={[styles.footerLink, { color: theme.primary }]}>Sign Up</Text>
             </TouchableOpacity>
         </View>
         {Platform.OS === 'web' && <View nativeID="clerk-captcha" />} 
