@@ -24,10 +24,12 @@ const SIDEBAR_WIDTH = width * 0.75;
 
 interface AddTransactionScreenProps {
   onNavigateHome: () => void;
+  onNavigateToSettings: () => void;
+  theme: typeof Colors.light;
 }
 
-export default function AddTransactionScreen({ onNavigateHome }: AddTransactionScreenProps) {
-  const theme = Colors.light;
+export default function AddTransactionScreen({ onNavigateHome, onNavigateToSettings, theme }: AddTransactionScreenProps) {
+  // const theme = Colors.light; // Removed local
   const [useAI, setUseAI] = useState(false);
   const [showAIInfo, setShowAIInfo] = useState(false);
   const [name, setName] = useState('');
@@ -143,6 +145,9 @@ export default function AddTransactionScreen({ onNavigateHome }: AddTransactionS
                    if (item === 'Home') {
                        toggleSidebar(false);
                        onNavigateHome();
+                   } else if (item === 'Settings') {
+                       toggleSidebar(false);
+                       onNavigateToSettings();
                    }
                 }}
               >

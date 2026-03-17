@@ -33,14 +33,16 @@ const { width } = Dimensions.get('window');
 const SIDEBAR_WIDTH = width * 0.75; 
 
 interface HomeScreenProps {
-  onNavigateToAdd?: () => void; // Made optional for now to avoid breaking existing calls
+  onNavigateToAdd?: () => void; 
+  onNavigateToSettings: () => void;
+  theme: typeof Colors.light;
 }
 
-export default function HomeScreen({ onNavigateToAdd }: HomeScreenProps) {
+export default function HomeScreen({ onNavigateToAdd, onNavigateToSettings, theme }: HomeScreenProps) {
   const { user } = useUser();
   const { signOut } = useClerk();
   
-  const theme = Colors.light; 
+  // const theme = Colors.light; // Removed local theme
   const sidebarAnim = useRef(new Animated.Value(-SIDEBAR_WIDTH)).current; 
   const isSidebarOpenRef = useRef(false);
   const [isOverlayVisible, setIsOverlayVisible] = useState(false);
@@ -139,7 +141,10 @@ export default function HomeScreen({ onNavigateToAdd }: HomeScreenProps) {
                 key={index} 
                 style={[styles.sidebarButton, { backgroundColor: theme.primary }]}
                 onPress={() => {
-                  if (item === 'Log Out') {
+                  if (item === 'Settings') {
+                    toggleSidebar(false);
+                    onNavigateToSettings();
+                  } else if (item === 'Log Out') {
                     signOut(); // Integrate Clerk SignOut
                   } else {
                     toggleSidebar(false);
