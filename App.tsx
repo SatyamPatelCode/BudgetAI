@@ -4,6 +4,8 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import HomeScreen from './src/screens/HomeScreen';
 import SignInScreen from './src/screens/SignInScreen';
 import SignUpScreen from './src/screens/SignUpScreen';
+// @ts-ignore: Could not find a declaration file for module
+import SettingsScreen from './src/screens/SettingsScreen';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts, Poppins_400Regular, Poppins_700Bold } from '@expo-google-fonts/poppins';
 import * as SplashScreen from 'expo-splash-screen';
@@ -69,7 +71,7 @@ export default function App() {
             <SignInScreen onSignUpPress={() => setShowSignUp(true)} />
           )}
         </SignedOut>
-        <StatusBar style="auto" />
+        <StatusBar style={isDarkMode ? "light" : "dark"} />
       </SafeAreaProvider>
     </ClerkProvider>
   );
