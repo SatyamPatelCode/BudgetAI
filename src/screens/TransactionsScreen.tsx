@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { 
   View, 
   Text, 
@@ -12,34 +12,25 @@ import {
   PanResponder,
   TouchableWithoutFeedback,
   Alert,
-  RefreshControl
+  RefreshControl,
+  ActivityIndicator
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Colors from '../constants/Colors';
 import { SimpleLineIcons, Ionicons } from '@expo/vector-icons';
-import { useUser, useClerk, useAuth } from '@clerk/clerk-expo'; 
+import { useUser, useClerk, useAuth } from '@clerk/clerk-expo';
 import { createAuthenticatedSupabaseClient } from '../lib/supabase';
 
 const icon = require('../../assets/BudgetAI_BWTransparent.png');
-
-// const TRANSACTIONS = [
-//   { id: '1', name: 'Grocery Store', category: 'Food', amount: 45.50 },
-//   { id: '2', name: 'Uber Ride', category: 'Transport', amount: 12.25 },
-//   { id: '3', name: 'Netflix', category: 'Entertainment', amount: 15.00 },
-//   { id: '4', name: 'Coffee Shop', category: 'Food', amount: 5.75 },
-//   { id: '5', name: 'Gym Membership', category: 'Health', amount: 30.00 },
-//   { id: '6', name: 'Electric Bill', category: 'Bills', amount: 120.00 },
-// ];
-
 const { width } = Dimensions.get('window');
 const SIDEBAR_WIDTH = width * 0.75; 
 
-interface HomeScreenProps {
-  onNavigateToAdd?: () => void;
-  onNavigateToHistory?: () => void; // Added for navigation
+interface TransactionsScreenProps {
+  onNavigateHome: () => void;
+  onNavigateToAdd?: () => void; // Added prop for navigation
 }
 
-export default function HomeScreen({ onNavigateToAdd, onNavigateToHistory }: HomeScreenProps) {
+export default function TransactionsScreen({ onNavigateHome, onNavigateToAdd }: TransactionsScreenProps) {
   const { user } = useUser();
   const { getToken } = useAuth();
   const { signOut } = useClerk();
@@ -47,6 +38,11 @@ export default function HomeScreen({ onNavigateToAdd, onNavigateToHistory }: Hom
   const [transactions, setTransactions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const theme = Colors.light; 
+
+  const sidebarAnim = useRef(new Animated.Value(-SIDEBAR_WIDTH)).current; 
+  const isSidebarOpenRef = useRef(false);
+  const [isOverlayVisible, setIsOverlayVisible] = useState(false);
 
   const fetchTransactions = useCallback(async () => {
     try {
@@ -58,8 +54,7 @@ export default function HomeScreen({ onNavigateToAdd, onNavigateToHistory }: Hom
       const { data, error } = await supabase
         .from('transactions')
         .select('*')
-        .order('created_at', { ascending: false })
-        .limit(4); // Limit to 4
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
 
@@ -76,38 +71,8 @@ export default function HomeScreen({ onNavigateToAdd, onNavigateToHistory }: Hom
     fetchTransactions();
   }, [fetchTransactions]);
 
-  const deleteTransaction = async (id: string) => {
-    try {
-        const token = await getToken({ template: 'supabase' });
-        if (!token) return;
-        const supabase = createAuthenticatedSupabaseClient(token);
-        
-        const { error } = await supabase.from('transactions').delete().eq('id', id);
-        
-        if (error) throw error;
-        
-        // Optimistic update
-        setTransactions(prev => prev.filter(t => t.id !== id));
-    } catch(err) {
-        Alert.alert('Error', 'Failed to delete transaction');
-    }
-  };
-
-  const confirmDelete = (id: string) => {
-      Alert.alert('Delete Transaction', 'Are you sure?', [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Delete', style: 'destructive', onPress: () => deleteTransaction(id) }
-      ]);
-  };
-  
-  const theme = Colors.light; 
-  const sidebarAnim = useRef(new Animated.Value(-SIDEBAR_WIDTH)).current; 
-  const isSidebarOpenRef = useRef(false);
-  const [isOverlayVisible, setIsOverlayVisible] = useState(false);
-
   const toggleSidebar = (toOpen: boolean) => {
     if (toOpen) setIsOverlayVisible(true);
-
     Animated.timing(sidebarAnim, {
       toValue: toOpen ? 0 : -SIDEBAR_WIDTH,
       duration: 300,
@@ -120,6 +85,7 @@ export default function HomeScreen({ onNavigateToAdd, onNavigateToHistory }: Hom
     });
   };
 
+  // Simplified PanResponder for sidebar
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (evt, gestureState) => {
@@ -169,7 +135,6 @@ export default function HomeScreen({ onNavigateToAdd, onNavigateToHistory }: Hom
 
   const renderSidebar = () => {
     if (!isOverlayVisible) return null;
-
     return (
       <View style={[StyleSheet.absoluteFill, { zIndex: 100 }]} pointerEvents='box-none'>
         <TouchableWithoutFeedback onPress={() => toggleSidebar(false)}>
@@ -187,26 +152,26 @@ export default function HomeScreen({ onNavigateToAdd, onNavigateToHistory }: Hom
              <TouchableOpacity style={styles.sidebarMenuButton} onPress={() => toggleSidebar(false)}>
                 <SimpleLineIcons name='menu' size={24} color='black' />
              </TouchableOpacity>
-
              <View style={styles.sidebarLogoContainer}>
                <Image source={icon} style={styles.sidebarIcon} resizeMode='contain' />
              </View>
           </View>
           
           <View style={styles.sidebarContent}>
+             {/* Sidebar Menu Items */}
             {['Home', 'History', 'Recap', 'Settings', 'Log Out'].map((item, index) => (
               <TouchableOpacity 
                 key={index} 
                 style={[styles.sidebarButton, { backgroundColor: theme.primary }]}
                 onPress={() => {
-                  if (item === 'Log Out') {
-                    signOut();
-                  } else if (item === 'History') {
-                    toggleSidebar(false);
-                    onNavigateToHistory?.();
-                  } else {
-                    toggleSidebar(false);
-                  }
+                   if (item === 'Home') {
+                       toggleSidebar(false);
+                       onNavigateHome();
+                   } else if (item === 'Log Out') {
+                       signOut();
+                   } else {
+                       toggleSidebar(false);
+                   }
                 }}
               >
                 <Text style={styles.sidebarButtonText}>{item}</Text>
@@ -220,18 +185,12 @@ export default function HomeScreen({ onNavigateToAdd, onNavigateToHistory }: Hom
 
   const renderTransaction = ({ item }: { item: any }) => (
     <View style={[styles.transactionRow, { borderColor: theme.secondary }]}>
-      <TouchableOpacity style={styles.deleteButton} onPress={() => confirmDelete(item.id)}>
-        <Ionicons name='close-circle' size={20} color={theme.error} />
-      </TouchableOpacity>
-      
       <View style={styles.colName}>
         <Text style={[styles.transactionText, { color: theme.text }]} numberOfLines={1}>{item.name}</Text>
       </View>
-      
       <View style={styles.colCategory}>
         <Text style={[styles.transactionText, { color: theme.textSecondary }]} numberOfLines={1}>{item.category}</Text>
       </View>
-      
       <View style={styles.colAmount}>
         <Text style={[styles.transactionText, { color: theme.text, fontWeight: 'bold' }]}>
           ${typeof item.amount === 'number' ? item.amount.toFixed(2) : item.amount}
@@ -242,70 +201,57 @@ export default function HomeScreen({ onNavigateToAdd, onNavigateToHistory }: Hom
 
   const Header = () => (
     <View style={styles.headerContainer}>
-      <View style={styles.greetingContainer}>
-        {/* Dynamic Name */}
-        <Text style={[styles.greetingText, { color: theme.secondary }]}>
-          Hello {user?.firstName || user?.username || 'User'},
-        </Text>
-        <Text style={[styles.subGreetingText, { color: theme.text }]}>Here is your spending overview</Text>
-      </View>
+        <View style={styles.listHeaderRow}>
+            <Text style={[styles.sectionTitle, { color: theme.secondary }]}>All Transactions</Text>
+            <TouchableOpacity style={[styles.filterButton, { borderColor: theme.secondary }]}>
+               <Text style={{ color: theme.secondary }}>Filter</Text>
+            </TouchableOpacity>
+        </View>
 
-      <View style={[styles.chartPlaceholder, { backgroundColor: '#E0E0E0' }]} />
-
-      <View style={styles.listHeaderRow}>
-        <Text style={[styles.sectionTitle, { color: theme.secondary }]}>Recent Transactions:</Text>
-        
-        {/* View More Button */}
-        <TouchableOpacity 
-           style={[styles.filterButton, { borderColor: theme.secondary }]}
-           onPress={onNavigateToHistory}
-        >
-          <Text style={{ color: theme.secondary }}>View More</Text>
-        </TouchableOpacity>
-      </View>
-
-      <View style={[styles.columnHeaderRow, { borderColor: theme.secondary }]}>
-        <Text style={[styles.columnHeaderText, { flex: 2, textAlign: 'center' }]}>Name</Text>
-        <Text style={[styles.columnHeaderText, { flex: 2, textAlign: 'center' }]}>Category</Text>
-        <Text style={[styles.columnHeaderText, { flex: 1, textAlign: 'center' }]}>Cost</Text>
-      </View>
+        <View style={[styles.columnHeaderRow, { borderColor: theme.secondary }]}>
+            <Text style={[styles.columnHeaderText, { flex: 2, textAlign: 'center' }]}>Name</Text>
+            <Text style={[styles.columnHeaderText, { flex: 2, textAlign: 'center' }]}>Category</Text>
+            <Text style={[styles.columnHeaderText, { flex: 1, textAlign: 'center' }]}>Cost</Text>
+        </View>
     </View>
   );
-  
-  const Footer = () => <View style={{ height: 80 }} />;
 
   return (
-    <View 
-      style={{ flex: 1, backgroundColor: theme.primary }}
-      {...panResponder.panHandlers}
-    >
+    <View style={{ flex: 1, backgroundColor: theme.primary }} {...panResponder.panHandlers}>
       {renderSidebar()}
-      
       <SafeAreaView style={{ flex: 1 }} edges={['top', 'left', 'right']}>
         <StatusBar barStyle='dark-content' />
-        
         <View style={[styles.navBar, { backgroundColor: theme.primary }]}>
           <TouchableOpacity style={styles.menuButton} onPress={() => toggleSidebar(true)}>
             <SimpleLineIcons name='menu' size={24} color='black' />
           </TouchableOpacity>
-          <Image source={icon} style={styles.navIcon} resizeMode='contain' />
+          <TouchableOpacity onPress={onNavigateHome}>
+             <Image source={icon} style={styles.navIcon} resizeMode='contain' />
+          </TouchableOpacity>
           <View style={{ width: 24 }} /> 
         </View>
 
         <View style={{ flex: 1, backgroundColor: theme.background }}>
-          <FlatList
-            data={transactions}
-            renderItem={renderTransaction}
-            keyExtractor={(item) => item.id}
-            ListHeaderComponent={Header}
-            ListFooterComponent={Footer} 
-            contentContainerStyle={styles.listContent}
-            showsVerticalScrollIndicator={false}
-            refreshControl={
-                <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchTransactions(); }} />
-            }
-          />
+          {loading ? (
+             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <ActivityIndicator size="large" color={theme.primary} />
+             </View>
+          ) : (
+              <FlatList
+                data={transactions}
+                renderItem={renderTransaction}
+                keyExtractor={(item) => item.id}
+                ListHeaderComponent={Header}
+                ListFooterComponent={() => <View style={{ height: 40 }} />}
+                contentContainerStyle={styles.listContent}
+                showsVerticalScrollIndicator={false}
+                refreshControl={
+                    <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchTransactions(); }} />
+                }
+              />
+          )}
 
+           {/* Floating Action Button (FAB) */}
            <TouchableOpacity 
             style={[styles.fab, { backgroundColor: theme.secondary }]}
             onPress={onNavigateToAdd}
@@ -315,7 +261,6 @@ export default function HomeScreen({ onNavigateToAdd, onNavigateToHistory }: Hom
 
           <View style={[styles.bottomBar, { backgroundColor: theme.primary }]} />
         </View>
-
       </SafeAreaView>
     </View>
   );
@@ -323,27 +268,22 @@ export default function HomeScreen({ onNavigateToAdd, onNavigateToHistory }: Hom
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  navBar: { height: 80, marginTop: 0, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, width: '100%' },
+  navBar: { height: 80, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, width: '100%' },
   menuButton: { padding: 5 },
   navIcon: { height: 60, width: 200 },
   listContent: { paddingBottom: 100 },
   headerContainer: { paddingHorizontal: 20, paddingTop: 20 },
-  greetingContainer: { marginBottom: 20 },
-  greetingText: { fontSize: 24, fontWeight: 'bold', fontFamily: 'Poppins_700Bold' },
-  subGreetingText: { fontSize: 14, marginTop: 4 },
-  chartPlaceholder: { height: 200, width: '100%', backgroundColor: '#D3D3D3', marginBottom: 20 },
-  listHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
-  sectionTitle: { fontSize: 20, fontWeight: 'bold', fontFamily: 'Poppins_700Bold' },
+  listHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
+  sectionTitle: { fontSize: 24, fontWeight: 'bold', fontFamily: 'Poppins_700Bold' },
   filterButton: { borderWidth: 1, borderRadius: 20, paddingHorizontal: 20, paddingVertical: 5 },
   columnHeaderRow: { flexDirection: 'row', paddingVertical: 10, borderWidth: 1, borderRadius: 12, marginBottom: 10, backgroundColor: 'white', alignItems: 'center' },
   columnHeaderText: { fontSize: 16, fontWeight: '600', color: 'black' },
   transactionRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 16, paddingHorizontal: 10, marginHorizontal: 20, marginBottom: 10, borderRadius: 12, borderWidth: 1, backgroundColor: 'white' },
-  deleteButton: { position: 'absolute', top: -10, right: -10, zIndex: 1, backgroundColor: 'white', borderRadius: 10 },
   colName: { flex: 2, alignItems: 'center' },
   colCategory: { flex: 2, alignItems: 'center' },
   colAmount: { flex: 1, alignItems: 'center' },
   transactionText: { fontSize: 14 },
-  fab: { position: 'absolute', bottom: 50, right: 20, width: 60, height: 60, borderRadius: 30, justifyContent: 'center', alignItems: 'center', zIndex: 10, elevation: 5, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4 },
+  fab: { position: 'absolute', bottom: 80, right: 20, width: 60, height: 60, borderRadius: 30, justifyContent: 'center', alignItems: 'center', zIndex: 10, elevation: 5, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4 },
   bottomBar: { height: 60, width: '100%', position: 'absolute', bottom: 0 },
   modalBackdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'black' },
   sidebarContainer: { width: SIDEBAR_WIDTH, height: '100%', shadowColor: '#000', shadowOffset: { width: 2, height: 0 }, shadowOpacity: 0.25, shadowRadius: 5, elevation: 5, backgroundColor: 'white', position: 'absolute', left: 0 },

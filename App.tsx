@@ -12,7 +12,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { ClerkProvider, SignedIn, SignedOut } from '@clerk/clerk-expo';
 import { tokenCache } from './cache';
 import AddTransactionScreen from './src/screens/AddTransactionScreen';
-import Colors from './src/constants/Colors';
+import TransactionsScreen from './src/screens/TransactionsScreen'; // Import new screen
 
 const PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
@@ -25,14 +25,7 @@ SplashScreen.preventAutoHideAsync();
 
 export default function App() {
   const [showSignUp, setShowSignUp] = useState(false);
-  const [currentScreen, setCurrentScreen] = useState<'Home' | 'AddTransaction' | 'Settings'>('Home');
-  const [themeName, setThemeName] = useState<'light' | 'dark'>('light');
-  const theme = Colors[themeName];
-  const isDarkMode = themeName === 'dark';
-
-  const toggleTheme = () => {
-    setThemeName(prev => prev === 'light' ? 'dark' : 'light');
-  };
+  const [currentScreen, setCurrentScreen] = useState<'Home' | 'AddTransaction' | 'History'>('Home'); // Updated state
 
   const [fontsLoaded] = useFonts({
     Poppins_400Regular,
@@ -54,26 +47,20 @@ export default function App() {
       <SafeAreaProvider onLayout={onLayoutRootView}>
         <SignedIn>
           {/* Simple navigation switch */}
-          {currentScreen === 'Home' && (
+          {currentScreen === 'Home' ? (
              <HomeScreen 
                onNavigateToAdd={() => setCurrentScreen('AddTransaction')} 
-               onNavigateToSettings={() => setCurrentScreen('Settings')}
-               theme={theme}
+               onNavigateToHistory={() => setCurrentScreen('History')}
              />
-          )}
-          {currentScreen === 'AddTransaction' && (
+          ) : currentScreen === 'AddTransaction' ? (
              <AddTransactionScreen 
                onNavigateHome={() => setCurrentScreen('Home')} 
-               onNavigateToSettings={() => setCurrentScreen('Settings')}
-               theme={theme}
+               onNavigateToHistory={() => setCurrentScreen('History')}
              />
-          )}
-          {currentScreen === 'Settings' && (
-             <SettingsScreen 
-               onNavigateHome={() => setCurrentScreen('Home')}
-               theme={theme}
-               toggleTheme={toggleTheme}
-               isDarkMode={isDarkMode}
+          ) : (
+             <TransactionsScreen 
+               onNavigateHome={() => setCurrentScreen('Home')} 
+               onNavigateToAdd={() => setCurrentScreen('AddTransaction')}
              />
           )}
         </SignedIn>
