@@ -4,12 +4,15 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import HomeScreen from './src/screens/HomeScreen';
 import SignInScreen from './src/screens/SignInScreen';
 import SignUpScreen from './src/screens/SignUpScreen';
+// @ts-ignore: Could not find a declaration file for module
+import SettingsScreen from './src/screens/SettingsScreen';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts, Poppins_400Regular, Poppins_700Bold } from '@expo-google-fonts/poppins';
 import * as SplashScreen from 'expo-splash-screen';
 import { ClerkProvider, SignedIn, SignedOut } from '@clerk/clerk-expo';
 import { tokenCache } from './cache';
-import AddTransactionScreen from './src/screens/AddTransactionScreen'; // Import the new screen
+import AddTransactionScreen from './src/screens/AddTransactionScreen';
+import Colors from './src/constants/Colors';
 
 const PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
@@ -22,14 +25,19 @@ SplashScreen.preventAutoHideAsync();
 
 export default function App() {
   const [showSignUp, setShowSignUp] = useState(false);
-  const [currentScreen, setCurrentScreen] = useState<'Home' | 'AddTransaction'>('Home'); // State for local navigation
+  const [currentScreen, setCurrentScreen] = useState<'Home' | 'AddTransaction' | 'Settings'>('Home');
+  const [themeName, setThemeName] = useState<'light' | 'dark'>('light');
+  const theme = Colors[themeName];
+  const isDarkMode = themeName === 'dark';
+
+  const toggleTheme = () => {
+    setThemeName(prev => prev === 'light' ? 'dark' : 'light');
+  };
 
   const [fontsLoaded] = useFonts({
     Poppins_400Regular,
     Poppins_700Bold,
   });
-
-  const [currentScreen, setCurrentScreen] = useState<'Home' | 'AddTransaction'>('Home');
 
   const onLayoutRootView = useCallback(async () => {
     if (fontsLoaded) {
@@ -46,10 +54,27 @@ export default function App() {
       <SafeAreaProvider onLayout={onLayoutRootView}>
         <SignedIn>
           {/* Simple navigation switch */}
-          {currentScreen === 'Home' ? (
-             <HomeScreen onNavigateToAdd={() => setCurrentScreen('AddTransaction')} />
-          ) : (
-             <AddTransactionScreen onNavigateHome={() => setCurrentScreen('Home')} />
+          {currentScreen === 'Home' && (
+             <HomeScreen 
+               onNavigateToAdd={() => setCurrentScreen('AddTransaction')} 
+               onNavigateToSettings={() => setCurrentScreen('Settings')}
+               theme={theme}
+             />
+          )}
+          {currentScreen === 'AddTransaction' && (
+             <AddTransactionScreen 
+               onNavigateHome={() => setCurrentScreen('Home')} 
+               onNavigateToSettings={() => setCurrentScreen('Settings')}
+               theme={theme}
+             />
+          )}
+          {currentScreen === 'Settings' && (
+             <SettingsScreen 
+               onNavigateHome={() => setCurrentScreen('Home')}
+               theme={theme}
+               toggleTheme={toggleTheme}
+               isDarkMode={isDarkMode}
+             />
           )}
         </SignedIn>
         <SignedOut>
@@ -59,7 +84,7 @@ export default function App() {
             <SignInScreen onSignUpPress={() => setShowSignUp(true)} />
           )}
         </SignedOut>
-        <StatusBar style="auto" />
+        <StatusBar style={isDarkMode ? "light" : "dark"} />
       </SafeAreaProvider>
     </ClerkProvider>
   );
