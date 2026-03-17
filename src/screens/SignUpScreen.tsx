@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { useSignUp } from '@clerk/clerk-expo';
+import Colors from '../constants/Colors';
 
-export default function SignUpScreen({ onSignInPress }: { onSignInPress: () => void }) {
+export default function SignUpScreen({ onSignInPress, theme }: { onSignInPress: () => void, theme: typeof Colors.light }) {
   const { isLoaded, signUp, setActive } = useSignUp();
   
   const [emailAddress, setEmailAddress] = useState('');
@@ -50,64 +51,64 @@ export default function SignUpScreen({ onSignInPress }: { onSignInPress: () => v
   return (
     <KeyboardAvoidingView 
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.container}
+      style={[styles.container, { backgroundColor: theme.background }]}
     >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         {!pendingVerification && (
           <View>
-            <Text style={styles.title}>Create Account</Text>
-            <Text style={styles.subtitle}>Sign up to get started with BudgetAI</Text>
+            <Text style={[styles.title, { color: theme.text }]}>Create Account</Text>
+            <Text style={[styles.subtitle, { color: theme.textSecondary }]}>Sign up to get started with BudgetAI</Text>
 
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Username</Text>
+              <Text style={[styles.label, { color: theme.text }]}>Username</Text>
               <TextInput
                 autoCapitalize="none"
                 value={username}
                 placeholder="Choose a username"
-                placeholderTextColor="#888"
+                placeholderTextColor={theme.textSecondary}
                 onChangeText={(username) => setUsername(username)}
-                style={styles.input}
+                style={[styles.input, { backgroundColor: theme.card, borderColor: theme.secondary, color: theme.text }]}
               />
             </View>
 
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Email</Text>
+              <Text style={[styles.label, { color: theme.text }]}>Email</Text>
               <TextInput
                 autoCapitalize="none"
                 value={emailAddress}
                 placeholder="Enter your email"
-                placeholderTextColor="#888"
+                placeholderTextColor={theme.textSecondary}
                 onChangeText={(email) => setEmailAddress(email)}
-                style={styles.input}
+                style={[styles.input, { backgroundColor: theme.card, borderColor: theme.secondary, color: theme.text }]}
               />
             </View>
 
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Password</Text>
+              <Text style={[styles.label, { color: theme.text }]}>Password</Text>
               <TextInput
                 value={password}
                 placeholder="Create a password"
-                placeholderTextColor="#888"
+                placeholderTextColor={theme.textSecondary}
                 secureTextEntry={true}
                 onChangeText={(password) => setPassword(password)}
-                style={styles.input}
+                style={[styles.input, { backgroundColor: theme.card, borderColor: theme.secondary, color: theme.text }]}
               />
             </View>
 
             {errorMessage ? (
-              <View style={styles.errorContainer}>
-                <Text style={styles.errorText}>{errorMessage}</Text>
+              <View style={[styles.errorContainer, { borderColor: theme.error, backgroundColor: theme.card }]}>
+                <Text style={[styles.errorText, { color: theme.error }]}>{errorMessage}</Text>
               </View>
             ) : null}
 
-            <TouchableOpacity style={styles.button} onPress={onSignUpPress}>
+            <TouchableOpacity style={[styles.button, { backgroundColor: theme.primary }]} onPress={onSignUpPress}>
               <Text style={styles.buttonText}>Sign Up</Text>
             </TouchableOpacity>
             
             <View style={styles.footer}>
-              <Text style={styles.footerText}>Already have an account?</Text>
+              <Text style={[styles.footerText, { color: theme.textSecondary }]}>Already have an account?</Text>
               <TouchableOpacity onPress={onSignInPress}>
-                <Text style={[styles.footerLink, { color: '#00D09C' }]}>Sign In</Text>
+                <Text style={[styles.footerLink, { color: theme.primary }]}>Sign In</Text>
               </TouchableOpacity>
             </View>
             {Platform.OS === 'web' && <View nativeID="clerk-captcha" />}
@@ -116,28 +117,28 @@ export default function SignUpScreen({ onSignInPress }: { onSignInPress: () => v
 
         {pendingVerification && (
           <View>
-            <Text style={styles.title}>Verify Email</Text>
-            <Text style={styles.subtitle}>We've sent a verification code to your email.</Text>
+            <Text style={[styles.title, { color: theme.text }]}>Verify Email</Text>
+            <Text style={[styles.subtitle, { color: theme.textSecondary }]}>We've sent a verification code to your email.</Text>
             
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Verification Code</Text>
+              <Text style={[styles.label, { color: theme.text }]}>Verification Code</Text>
               <TextInput
                 value={code}
                 placeholder="Enter 6-digit code"
-                placeholderTextColor="#888"
+                placeholderTextColor={theme.textSecondary}
                 onChangeText={(code) => setCode(code)}
-                style={styles.input}
+                style={[styles.input, { backgroundColor: theme.card, borderColor: theme.secondary, color: theme.text }]}
                 keyboardType="number-pad"
               />
             </View>
 
             {errorMessage ? (
-              <View style={styles.errorContainer}>
-                <Text style={styles.errorText}>{errorMessage}</Text>
+              <View style={[styles.errorContainer, { borderColor: theme.error, backgroundColor: theme.card }]}>
+                <Text style={[styles.errorText, { color: theme.error }]}>{errorMessage}</Text>
               </View>
             ) : null}
 
-            <TouchableOpacity style={styles.button} onPress={onPressVerify}>
+            <TouchableOpacity style={[styles.button, { backgroundColor: theme.primary }]} onPress={onPressVerify}>
               <Text style={styles.buttonText}>Verify Email</Text>
             </TouchableOpacity>
           </View>

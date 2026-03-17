@@ -15,19 +15,19 @@ const Colors = {
     tabIconSelected: '#00D09C',
   },
   dark: {
-    primary: '#00D09C',
+    primary: '#2d8a67',       // Brighter Dark Alpine Green
     secondary: '#5E5CE6',
-    background: '#121212',    // Dark Charcoal
-    card: '#1E1E1E',          // Lighter Charcoal
+    background: '#1a1c1a',    // Darker Grey Background
+    card: '#292b2a',          // Grey Boxes
     text: '#EDEDED',          // Off-white
     textSecondary: '#A1A1AA', // Light Grey
-    success: '#4ADE80',       // Neon Green
+    success: '#2d8a67',       // Brighter Dark Alpine Green
     error: '#F87171',         // Salmon
     warning: '#FFB340',
     // Keep tint/tab for backward compat if needed, using primary
-    tint: '#00D09C',
+    tint: '#2d8a67',
     tabIconDefault: '#ccc',
-    tabIconSelected: '#00D09C',
+    tabIconSelected: '#2d8a67',
   },
 };
 

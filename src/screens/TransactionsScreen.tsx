@@ -184,7 +184,7 @@ export default function TransactionsScreen({ onNavigateHome, onNavigateToAdd }: 
   };
 
   const renderTransaction = ({ item }: { item: any }) => (
-    <View style={[styles.transactionRow, { borderColor: theme.secondary }]}>
+    <View style={[styles.transactionRow, { borderColor: theme.secondary, backgroundColor: theme.card }]}>
       <View style={styles.colName}>
         <Text style={[styles.transactionText, { color: theme.text }]} numberOfLines={1}>{item.name}</Text>
       </View>
@@ -208,10 +208,10 @@ export default function TransactionsScreen({ onNavigateHome, onNavigateToAdd }: 
             </TouchableOpacity>
         </View>
 
-        <View style={[styles.columnHeaderRow, { borderColor: theme.secondary }]}>
-            <Text style={[styles.columnHeaderText, { flex: 2, textAlign: 'center' }]}>Name</Text>
-            <Text style={[styles.columnHeaderText, { flex: 2, textAlign: 'center' }]}>Category</Text>
-            <Text style={[styles.columnHeaderText, { flex: 1, textAlign: 'center' }]}>Cost</Text>
+        <View style={[styles.columnHeaderRow, { borderColor: theme.secondary, backgroundColor: theme.card }]}>
+           <Text style={[styles.columnHeaderText, { flex: 2, textAlign: 'center', color: theme.text }]}>Name</Text>
+           <Text style={[styles.columnHeaderText, { flex: 2, textAlign: 'center', color: theme.text }]}>Category</Text>
+           <Text style={[styles.columnHeaderText, { flex: 1, textAlign: 'center', color: theme.text }]}>Cost</Text>
         </View>
     </View>
   );
@@ -293,5 +293,5 @@ const styles = StyleSheet.create({
   sidebarIcon: { height: 60, width: 200 },
   sidebarContent: { flex: 1, padding: 20, backgroundColor: 'white' },
   sidebarButton: { paddingVertical: 15, borderRadius: 12, alignItems: 'center', marginBottom: 15 },
-  sidebarButtonText: { fontSize: 18, fontWeight: 'bold', color: '#6B4EFF', fontFamily: 'Poppins_700Bold' },
+  sidebarButtonText: { fontSize: 18, fontWeight: 'bold', color: '#5E5CE6', fontFamily: 'Poppins_700Bold' },
 });
