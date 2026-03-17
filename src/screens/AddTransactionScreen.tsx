@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { 
   View, 
   Text, 
@@ -11,11 +11,15 @@ import {
   Animated,
   PanResponder,
   TouchableWithoutFeedback,
-  Dimensions
+  Dimensions,
+  Alert,
+  ActivityIndicator
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SimpleLineIcons, Ionicons } from '@expo/vector-icons';
 import Colors from '../constants/Colors';
+import { useAuth, useUser, useClerk } from '@clerk/clerk-expo';
+import { createAuthenticatedSupabaseClient } from '../lib/supabase';
 
 const logo = require('../../assets/BudgetAI_BWTransparent.png');
 
@@ -24,16 +28,48 @@ const SIDEBAR_WIDTH = width * 0.75;
 
 interface AddTransactionScreenProps {
   onNavigateHome: () => void;
+  onNavigateToHistory?: () => void; // Added prop for navigation
 }
 
-export default function AddTransactionScreen({ onNavigateHome }: AddTransactionScreenProps) {
+export default function AddTransactionScreen({ onNavigateHome, onNavigateToHistory }: AddTransactionScreenProps) {
+  const { user } = useUser();
+  const { getToken } = useAuth();
+  const { signOut } = useClerk();
+  
   const theme = Colors.light;
   const [useAI, setUseAI] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [recentTransactions, setRecentTransactions] = useState<any[]>([]);
   const [showAIInfo, setShowAIInfo] = useState(false);
   const [name, setName] = useState('');
   const sidebarAnim = useRef(new Animated.Value(-SIDEBAR_WIDTH)).current; 
   const isSidebarOpenRef = useRef(false);
   const [isOverlayVisible, setIsOverlayVisible] = useState(false);
+  const [cost, setCost] = useState('');
+  const [category, setCategory] = useState('');
+
+  const fetchRecentTransactions = useCallback(async () => {
+    try {
+      const token = await getToken({ template: 'supabase' });
+      if (!token) return;
+
+      const supabase = createAuthenticatedSupabaseClient(token);
+      const { data, error } = await supabase
+        .from('transactions')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(4); // Changed from 5 to 4 to match HomeScreen
+
+      if (error) throw error;
+      setRecentTransactions(data || []);
+    } catch (err) {
+      console.error('Error fetching recent transactions:', err);
+    }
+  }, [getToken]);
+
+  useEffect(() => {
+    fetchRecentTransactions();
+  }, [fetchRecentTransactions]);
 
   const toggleSidebar = (toOpen: boolean) => {
     if (toOpen) setIsOverlayVisible(true);
@@ -135,7 +171,7 @@ export default function AddTransactionScreen({ onNavigateHome }: AddTransactionS
           </View>
           
           <View style={styles.sidebarContent}>
-            {['Home', 'Recap', 'Settings', 'Log Out'].map((item, index) => (
+            {['Home', 'History', 'Recap', 'Settings', 'Log Out'].map((item, index) => (
               <TouchableOpacity 
                 key={index} 
                 style={[styles.sidebarButton, { backgroundColor: theme.primary }]}
@@ -143,6 +179,13 @@ export default function AddTransactionScreen({ onNavigateHome }: AddTransactionS
                    if (item === 'Home') {
                        toggleSidebar(false);
                        onNavigateHome();
+                   } else if (item === 'History') {
+                       toggleSidebar(false);
+                       onNavigateToHistory?.();
+                   } else if (item === 'Log Out') {
+                       signOut();
+                   } else {
+                       toggleSidebar(false);
                    }
                 }}
               >
@@ -155,17 +198,71 @@ export default function AddTransactionScreen({ onNavigateHome }: AddTransactionS
     );
   };
 
-  const [cost, setCost] = useState('');
-  const [category, setCategory] = useState('');
+  const handleDelete = async (id: string) => {
+    try {
+      const token = await getToken({ template: 'supabase' });
+      if (!token) return;
+      
+      const supabase = createAuthenticatedSupabaseClient(token);
+      const { error } = await supabase.from('transactions').delete().eq('id', id);
+      
+      if (error) throw error;
+      
+      // Optimistic update
+      setRecentTransactions(prev => prev.filter(t => t.id !== id));
+    } catch (err) {
+      Alert.alert('Error', 'Failed to delete transaction');
+    }
+  };
 
-  // Placeholder data to match the screenshot layout
-  // 1 filled item (header-like), 3 empty items
-  const recentItems = [
-    { id: '1', name: 'Name', category: 'Category', cost: 'Cost', isHeader: true },
-    { id: '2', name: '', category: '', cost: '', isHeader: false },
-    { id: '3', name: '', category: '', cost: '', isHeader: false },
-    { id: '4', name: '', category: '', cost: '', isHeader: false },
-  ];
+  const handleAddTransaction = async () => {
+    if (!name || !cost || (!category && !useAI)) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const token = await getToken({ template: 'supabase' });
+      if (!token) {
+        Alert.alert('Error', 'Could not authenticate with database');
+        return;
+      }
+      
+      const supabase = createAuthenticatedSupabaseClient(token);
+      
+      // If AI is selected, we could technically call an AI service here.
+      // For now, if AI is on, we'll default to 'Uncategorized' or implement AI logic later.
+      const finalCategory = useAI ? 'AI Categorized' : category;
+
+      const { error } = await supabase.from('transactions').insert({
+         user_id: user?.id,
+         name,
+         amount: parseFloat(cost),
+         category: finalCategory,
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      // Refresh the list and clear inputs
+      await fetchRecentTransactions();
+      
+      setName('');
+      setCost('');
+      setCategory('');
+      
+      // Optional: Inform user briefly or just show it in the list
+      // Alert.alert('Success', 'Transaction added'); 
+
+    } catch (error: any) {
+      console.error(error);
+      Alert.alert('Error', error.message || 'Failed to add transaction');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.primary }}>
@@ -256,33 +353,53 @@ export default function AddTransactionScreen({ onNavigateHome }: AddTransactionS
                 </View>
               )}
 
-              <TouchableOpacity style={[styles.addButton, { backgroundColor: theme.secondary }]}>
-                <Text style={styles.addButtonText}>Add</Text>
+              <TouchableOpacity 
+                style={[styles.addButton, { backgroundColor: theme.secondary }]}
+                onPress={handleAddTransaction}
+                disabled={loading}
+              >
+                {loading ? (
+                   <ActivityIndicator color="white" />
+                ) : (
+                   <Text style={styles.addButtonText}>Add</Text>
+                )}
               </TouchableOpacity>
             </View>
 
             {/* Recent Transactions Section */}
-            <Text style={[styles.sectionTitle, { color: theme.secondary, marginTop: 20 }]}>
-              Recent Transactions:
-            </Text>
+            <View style={styles.listHeaderRow}>
+               <Text style={[styles.sectionTitle, { color: theme.secondary, marginTop: 20 }]}>
+                 Recent Transactions:
+               </Text>
+               <TouchableOpacity 
+                   style={[styles.filterButton, { borderColor: theme.secondary, marginTop: 15 }]}
+                   onPress={onNavigateToHistory}
+                >
+                  <Text style={{ color: theme.secondary }}>View More</Text>
+                </TouchableOpacity>
+            </View>
 
-            {recentItems.map((item) => (
-              <View key={item.id} style={[styles.recentItemContainer, { borderColor: theme.secondary }]}>
-                {item.isHeader ? (
+            {/* Header Row */}
+             <View style={[styles.recentItemContainer, { borderColor: theme.secondary, backgroundColor: '#f0f0f0' }]}>
                   <View style={styles.recentItemContent}>
-                    <Text style={styles.recentItemText}>Name</Text>
-                    <Text style={styles.recentItemText}>Category</Text>
-                    <Text style={styles.recentItemText}>Cost</Text>
+                    <Text style={[styles.recentItemText, { fontWeight: 'bold' }]}>Name</Text>
+                    <Text style={[styles.recentItemText, { fontWeight: 'bold' }]}>Category</Text>
+                    <Text style={[styles.recentItemText, { fontWeight: 'bold' }]}>Cost</Text>
                   </View>
-                ) : (
-                  <View style={styles.recentItemContent} />
-                )}
+             </View>
+
+            {/* Dynamic Data Rows */}
+            {recentTransactions.map((item) => (
+              <View key={item.id} style={[styles.recentItemContainer, { borderColor: theme.secondary }]}>
+                  <View style={styles.recentItemContent}>
+                    <Text style={[styles.recentItemText, { flex: 1 }]} numberOfLines={1}>{item.name}</Text>
+                    <Text style={[styles.recentItemText, { flex: 1, textAlign: 'center' }]} numberOfLines={1}>{item.category || '-'}</Text>
+                    <Text style={[styles.recentItemText, { flex: 1, textAlign: 'right' }]}>${item.amount?.toFixed(2)}</Text>
+                  </View>
                 
-                {!item.isHeader && (
-                  <TouchableOpacity style={styles.deleteCircle}>
+                  <TouchableOpacity style={styles.deleteCircle} onPress={() => handleDelete(item.id)}>
                      <Ionicons name="close" size={12} color="white" />
                   </TouchableOpacity>
-                )}
               </View>
             ))}
 
@@ -367,6 +484,17 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     fontSize: 16,
+  },
+  listHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  filterButton: {
+    borderWidth: 1,
+    borderRadius: 20,
+    paddingHorizontal: 15,
+    paddingVertical: 5,
   },
   recentItemContainer: {
     borderWidth: 1,
