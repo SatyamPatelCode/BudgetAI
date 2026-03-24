@@ -171,7 +171,7 @@ export default function AddTransactionScreen({ onNavigateHome, onNavigateToHisto
              </View>
           </View>
           
-          <View style={styles.sidebarContent}>
+          <View style={[styles.sidebarContent, { backgroundColor: theme.background }]}>
             {['Home', 'History', 'Recap', 'Settings', 'Log Out'].map((item, index) => (
               <TouchableOpacity 
                 key={index} 
@@ -384,24 +384,24 @@ export default function AddTransactionScreen({ onNavigateHome, onNavigateToHisto
             </View>
 
             {/* Header Row */}
-             <View style={[styles.recentItemContainer, { borderColor: theme.secondary, backgroundColor: '#f0f0f0' }]}>
+             <View style={[styles.recentItemContainer, { borderColor: theme.secondary, backgroundColor: theme.card }]}>
                   <View style={styles.recentItemContent}>
-                    <Text style={[styles.recentItemText, { fontWeight: 'bold' }]}>Name</Text>
-                    <Text style={[styles.recentItemText, { fontWeight: 'bold' }]}>Category</Text>
-                    <Text style={[styles.recentItemText, { fontWeight: 'bold' }]}>Cost</Text>
+                    <Text style={[styles.recentItemText, { fontWeight: 'bold', color: theme.text }]}>Name</Text>
+                    <Text style={[styles.recentItemText, { fontWeight: 'bold', color: theme.text }]}>Category</Text>
+                    <Text style={[styles.recentItemText, { fontWeight: 'bold', color: theme.text }]}>Cost</Text>
                   </View>
              </View>
 
             {/* Dynamic Data Rows */}
             {recentTransactions.map((item) => (
-              <View key={item.id} style={[styles.recentItemContainer, { borderColor: theme.secondary }]}>
+              <View key={item.id} style={[styles.recentItemContainer, { borderColor: theme.secondary, backgroundColor: theme.card }]}>
                   <View style={styles.recentItemContent}>
-                    <Text style={[styles.recentItemText, { flex: 1 }]} numberOfLines={1}>{item.name}</Text>
-                    <Text style={[styles.recentItemText, { flex: 1, textAlign: 'center' }]} numberOfLines={1}>{item.category || '-'}</Text>
-                    <Text style={[styles.recentItemText, { flex: 1, textAlign: 'right' }]}>${item.amount?.toFixed(2)}</Text>
+                    <Text style={[styles.recentItemText, { flex: 1, color: theme.text }]} numberOfLines={1}>{item.name}</Text>
+                    <Text style={[styles.recentItemText, { flex: 1, textAlign: 'center', color: theme.text }]} numberOfLines={1}>{item.category || '-'}</Text>
+                    <Text style={[styles.recentItemText, { flex: 1, textAlign: 'right', color: theme.text }]}>${item.amount?.toFixed(2)}</Text>
                   </View>
                 
-                  <TouchableOpacity style={styles.deleteCircle} onPress={() => handleDelete(item.id)}>
+                  <TouchableOpacity style={[styles.deleteCircle, { borderColor: theme.card }]} onPress={() => handleDelete(item.id)}>
                      <Ionicons name="close" size={12} color="white" />
                   </TouchableOpacity>
               </View>
