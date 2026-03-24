@@ -158,7 +158,7 @@ export default function TransactionsScreen({ onNavigateHome, onNavigateToAdd, on
              </View>
           </View>
           
-          <View style={styles.sidebarContent}>
+          <View style={[styles.sidebarContent, { backgroundColor: theme.background }]}>
              {/* Sidebar Menu Items */}
             {['Home', 'History', 'Recap', 'Settings', 'Log Out'].map((item, index) => (
               <TouchableOpacity 
