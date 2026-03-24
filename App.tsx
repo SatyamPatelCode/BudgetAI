@@ -24,7 +24,7 @@ SplashScreen.preventAutoHideAsync();
 
 export default function App() {
   const [showSignUp, setShowSignUp] = useState(false);
-  const [currentScreen, setCurrentScreen] = useState<'Home' | 'AddTransaction' | 'History'>('Home'); // Updated state
+  const [currentScreen, setCurrentScreen] = useState<'Home' | 'AddTransaction' | 'History' | 'Settings'>('Home'); // Updated state
   const [themeName, setThemeName] = useState<'light' | 'dark'>('dark');
   const theme = Colors[themeName];
   const isDarkMode = themeName === 'dark';
@@ -57,16 +57,30 @@ export default function App() {
              <HomeScreen 
                onNavigateToAdd={() => setCurrentScreen('AddTransaction')} 
                onNavigateToHistory={() => setCurrentScreen('History')}
+               onNavigateToSettings={() => setCurrentScreen('Settings')}
+               theme={theme}
              />
           ) : currentScreen === 'AddTransaction' ? (
              <AddTransactionScreen 
                onNavigateHome={() => setCurrentScreen('Home')} 
                onNavigateToHistory={() => setCurrentScreen('History')}
+               onNavigateToSettings={() => setCurrentScreen('Settings')}
+               theme={theme}
+             />
+          ) : currentScreen === 'Settings' ? (
+             <SettingsScreen 
+               onNavigateHome={() => setCurrentScreen('Home')} 
+               onNavigateToHistory={() => setCurrentScreen('History')}
+               theme={theme}
+               toggleTheme={toggleTheme}
+               isDarkMode={themeName === 'dark'}
              />
           ) : (
              <TransactionsScreen 
                onNavigateHome={() => setCurrentScreen('Home')} 
                onNavigateToAdd={() => setCurrentScreen('AddTransaction')}
+               onNavigateToSettings={() => setCurrentScreen('Settings')}
+               theme={theme}
              />
           )}
         </SignedIn>

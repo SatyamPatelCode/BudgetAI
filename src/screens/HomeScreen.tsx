@@ -36,10 +36,12 @@ const SIDEBAR_WIDTH = width * 0.75;
 
 interface HomeScreenProps {
   onNavigateToAdd?: () => void;
-  onNavigateToHistory?: () => void; // Added for navigation
+  onNavigateToHistory?: () => void;
+  onNavigateToSettings?: () => void;
+  theme: any;
 }
 
-export default function HomeScreen({ onNavigateToAdd, onNavigateToHistory }: HomeScreenProps) {
+export default function HomeScreen({ onNavigateToAdd, onNavigateToHistory, onNavigateToSettings, theme }: HomeScreenProps) {
   const { user } = useUser();
   const { getToken } = useAuth();
   const { signOut } = useClerk();
@@ -100,7 +102,6 @@ export default function HomeScreen({ onNavigateToAdd, onNavigateToHistory }: Hom
       ]);
   };
   
-  const theme = Colors.light; 
   const sidebarAnim = useRef(new Animated.Value(-SIDEBAR_WIDTH)).current; 
   const isSidebarOpenRef = useRef(false);
   const [isOverlayVisible, setIsOverlayVisible] = useState(false);
@@ -204,6 +205,9 @@ export default function HomeScreen({ onNavigateToAdd, onNavigateToHistory }: Hom
                   } else if (item === 'History') {
                     toggleSidebar(false);
                     onNavigateToHistory?.();
+                  } else if (item === 'Settings') {
+                    toggleSidebar(false);
+                    onNavigateToSettings?.();
                   } else {
                     toggleSidebar(false);
                   }
