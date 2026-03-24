@@ -28,15 +28,16 @@ const SIDEBAR_WIDTH = width * 0.75;
 
 interface AddTransactionScreenProps {
   onNavigateHome: () => void;
-  onNavigateToHistory?: () => void; // Added prop for navigation
+  onNavigateToHistory?: () => void;
+  onNavigateToSettings?: () => void;
+  theme: any;
 }
 
-export default function AddTransactionScreen({ onNavigateHome, onNavigateToHistory }: AddTransactionScreenProps) {
+export default function AddTransactionScreen({ onNavigateHome, onNavigateToHistory, onNavigateToSettings, theme }: AddTransactionScreenProps) {
   const { user } = useUser();
   const { getToken } = useAuth();
   const { signOut } = useClerk();
   
-  const theme = Colors.light;
   const [useAI, setUseAI] = useState(false);
   const [loading, setLoading] = useState(false);
   const [recentTransactions, setRecentTransactions] = useState<any[]>([]);
@@ -182,6 +183,9 @@ export default function AddTransactionScreen({ onNavigateHome, onNavigateToHisto
                    } else if (item === 'History') {
                        toggleSidebar(false);
                        onNavigateToHistory?.();
+                   } else if (item === 'Settings') {
+                       toggleSidebar(false);
+                       onNavigateToSettings?.();
                    } else if (item === 'Log Out') {
                        signOut();
                    } else {

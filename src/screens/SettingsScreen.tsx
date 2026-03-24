@@ -20,12 +20,13 @@ const SIDEBAR_WIDTH = width * 0.75;
 
 interface SettingsScreenProps {
   onNavigateHome: () => void;
+  onNavigateToHistory?: () => void;
   theme: any;
   toggleTheme: () => void;
   isDarkMode: boolean;
 }
 
-export default function SettingsScreen({ onNavigateHome, theme, toggleTheme, isDarkMode }: SettingsScreenProps) {
+export default function SettingsScreen({ onNavigateHome, onNavigateToHistory, theme, toggleTheme, isDarkMode }: SettingsScreenProps) {
   const { signOut } = useClerk();
   const sidebarAnim = useRef(new Animated.Value(-SIDEBAR_WIDTH)).current; 
   const isSidebarOpenRef = useRef(false);
@@ -131,7 +132,7 @@ export default function SettingsScreen({ onNavigateHome, theme, toggleTheme, isD
           </View>
           
           <View style={[styles.sidebarContent, { backgroundColor: theme.background }]}>
-            {['Home', 'Recap', 'Settings', 'Log Out'].map((item, index) => (
+            {['Home', 'History', 'Recap', 'Settings', 'Log Out'].map((item, index) => (
               <TouchableOpacity 
                 key={index} 
                 style={[styles.sidebarButton, { backgroundColor: theme.primary }]}
@@ -139,6 +140,9 @@ export default function SettingsScreen({ onNavigateHome, theme, toggleTheme, isD
                   if (item === 'Home') {
                     toggleSidebar(false);
                     onNavigateHome();
+                  } else if (item === 'History') {
+                    toggleSidebar(false);
+                    onNavigateToHistory?.();
                   } else if (item === 'Log Out') {
                     signOut();
                   } else {
