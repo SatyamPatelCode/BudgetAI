@@ -20,6 +20,7 @@ import { SimpleLineIcons, Ionicons } from '@expo/vector-icons';
 import Colors from '../constants/Colors';
 import { useAuth, useUser, useClerk } from '@clerk/clerk-expo';
 import { createAuthenticatedSupabaseClient } from '../lib/supabase';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const logo = require('../../assets/BudgetAI_BWTransparent.png');
 
@@ -235,9 +236,63 @@ export default function AddTransactionScreen({ onNavigateHome, onNavigateToHisto
       
       const supabase = createAuthenticatedSupabaseClient(token);
       
-      // If AI is selected, we could technically call an AI service here.
-      // For now, if AI is on, we'll default to 'Uncategorized' or implement AI logic later.
-      const finalCategory = useAI ? 'AI Categorized' : category;
+      let finalCategory = category;
+
+      // 🤖 --- AI CATEGORIZATION LOGIC --- 🤖
+      if (useAI) {
+        try {
+          // 1. Fetch user's existing unique categories for context
+          const { data: existingData } = await supabase
+            .from('transactions')
+            .select('category');
+          
+          const existingCategories = existingData 
+            ? [...new Set(existingData.map(t => t.category).filter(Boolean))] 
+            : [];
+
+          // 2. Formulate the strict prompt so Gemini knows exactly what to do
+          const prompt = `You are a financial categorizer. The user just purchased "${name}" for $${cost}. Their existing financial categories are: [${existingCategories.join(', ')}]. 
+          Task: Pick the best matching existing category from the list. If none perfectly fit, generate a new, concise category name (maximum 2 words, Title Case). 
+          Constraint: Reply ONLY with the exact exact category name string, no punctuation, no conversational filler.`;
+
+          // 3. Call Gemini using a raw fetch request (Bypasses React Native SDK polyfill issues)
+          const apiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
+          
+          if (!apiKey) {
+             throw new Error("Missing Gemini API Key");
+          }
+
+          const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              contents: [{
+                parts: [{ text: prompt }]
+              }],
+              generationConfig: {
+                temperature: 0.2
+              }
+            })
+          });
+
+          const aiData = await response.json();
+          
+          if (aiData.error) {
+             throw new Error(aiData.error.message || "Unknown Gemini Error");
+          }
+
+          const generatedCategory = aiData.candidates[0].content.parts[0].text.replace(/["'\n]/g, "").trim();
+          
+          finalCategory = generatedCategory || 'Uncategorized';
+        } catch (aiError: any) {
+          console.error("AI Error:", aiError);
+          // Alert the user so they can see the exact error if it fails again
+          Alert.alert("AI Categorization Failed", aiError.message);
+          finalCategory = 'Manual Review Required'; 
+        }
+      }
 
       const { error } = await supabase.from('transactions').insert({
          user_id: user?.id,
