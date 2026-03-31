@@ -26,6 +26,7 @@ export default function App() {
   const [showSignUp, setShowSignUp] = useState(false);
   const [currentScreen, setCurrentScreen] = useState<'Home' | 'AddTransaction' | 'History' | 'Settings'>('Home'); // Updated state
   const [themeName, setThemeName] = useState<'light' | 'dark'>('dark');
+  const [aiSpecificity, setAiSpecificity] = useState<'Broad' | 'Normal' | 'Specific'>('Normal');
   const theme = Colors[themeName];
   const isDarkMode = themeName === 'dark';
 
@@ -66,6 +67,7 @@ export default function App() {
                onNavigateToHistory={() => setCurrentScreen('History')}
                onNavigateToSettings={() => setCurrentScreen('Settings')}
                theme={theme}
+               aiSpecificity={aiSpecificity}
              />
           ) : currentScreen === 'Settings' ? (
              <SettingsScreen 
@@ -74,6 +76,8 @@ export default function App() {
                theme={theme}
                toggleTheme={toggleTheme}
                isDarkMode={themeName === 'dark'}
+               aiSpecificity={aiSpecificity}
+               setAiSpecificity={setAiSpecificity}
              />
           ) : (
              <TransactionsScreen 

@@ -24,7 +24,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const logo = require('../../assets/BudgetAI_BWTransparent.png');
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get('window');   
 const SIDEBAR_WIDTH = width * 0.75;
 
 interface AddTransactionScreenProps {
@@ -32,9 +32,10 @@ interface AddTransactionScreenProps {
   onNavigateToHistory?: () => void;
   onNavigateToSettings?: () => void;
   theme: any;
+  aiSpecificity: 'Broad' | 'Normal' | 'Specific';
 }
 
-export default function AddTransactionScreen({ onNavigateHome, onNavigateToHistory, onNavigateToSettings, theme }: AddTransactionScreenProps) {
+export default function AddTransactionScreen({ onNavigateHome, onNavigateToHistory, onNavigateToSettings, theme, aiSpecificity }: AddTransactionScreenProps) {
   const { user } = useUser();
   const { getToken } = useAuth();
   const { signOut } = useClerk();
@@ -251,8 +252,14 @@ export default function AddTransactionScreen({ onNavigateHome, onNavigateToHisto
             : [];
 
           // 2. Formulate the strict prompt so Gemini knows exactly what to do
+          const specificityInstructions = 
+            aiSpecificity === 'Broad' ? "Create a very broad, general category (e.g., 'Food', 'Transportation', 'Entertainment')." :
+            aiSpecificity === 'Specific' ? "Create a very specific, detailed category based on the exact item or store (e.g., 'Fast Food', 'Gas Station', 'Movie Tickets')." :
+            "Create a moderately specific category that balances general grouping with some detail.";
+
           const prompt = `You are a financial categorizer. The user just purchased "${name}" for $${cost}. Their existing financial categories are: [${existingCategories.join(', ')}]. 
-          Task: Pick the best matching existing category from the list. If none perfectly fit, generate a new, concise category name (maximum 2 words, Title Case). 
+          Task: Pick the best matching existing category from the list. If none perfectly fit, generate a new, concise category name (maximum 2-3 words, Title Case). 
+          Specificity Preference: ${specificityInstructions}
           Constraint: Reply ONLY with the exact exact category name string, no punctuation, no conversational filler.`;
 
           // 3. Call Gemini using a raw fetch request (Bypasses React Native SDK polyfill issues)
@@ -408,6 +415,9 @@ export default function AddTransactionScreen({ onNavigateHome, onNavigateToHisto
                 <View style={styles.aiInfoCard}>
                   <Text style={styles.aiInfoText}>
                     Our AI will analyze your transaction details to automatically select the best category for you.
+                  </Text>
+                  <Text style={[styles.aiInfoText, { marginTop: 4, fontStyle: 'italic' }]}>
+                    Customize in Settings
                   </Text>
                 </View>
               )}
