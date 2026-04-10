@@ -19,8 +19,10 @@ import Colors from '../constants/Colors';
 import { SimpleLineIcons, Ionicons } from '@expo/vector-icons';
 import { useUser, useClerk, useAuth } from '@clerk/clerk-expo'; 
 import { createAuthenticatedSupabaseClient } from '../lib/supabase';
+import SpendingChart from '../components/SpendingChart'; // Import the newly created component
 
 const icon = require('../../assets/BudgetAI_BWTransparent.png');
+const logo = require('../../assets/BudgetAI_BWTransparent.png');
 
 // const TRANSACTIONS = [
 //   { id: '1', name: 'Grocery Store', category: 'Food', amount: 45.50 },
@@ -29,23 +31,25 @@ const icon = require('../../assets/BudgetAI_BWTransparent.png');
 //   { id: '4', name: 'Coffee Shop', category: 'Food', amount: 5.75 },
 //   { id: '5', name: 'Gym Membership', category: 'Health', amount: 30.00 },
 //   { id: '6', name: 'Electric Bill', category: 'Bills', amount: 120.00 },
-// ];
+// };
 
 const { width } = Dimensions.get('window');
 const SIDEBAR_WIDTH = width * 0.75; 
 
 interface HomeScreenProps {
-  onNavigateToAdd?: () => void;
+  onNavigateToAdd?: () => void; // Made optional for now to avoid breaking existing calls
   onNavigateToHistory?: () => void;
   onNavigateToSettings?: () => void;
-  theme: any;
+  theme?: any; // Add theme prop
 }
 
-export default function HomeScreen({ onNavigateToAdd, onNavigateToHistory, onNavigateToSettings, theme }: HomeScreenProps) {
+export default function HomeScreen({ onNavigateToAdd, onNavigateToHistory, onNavigateToSettings, theme: propTheme }: HomeScreenProps) {
   const { user } = useUser();
   const { getToken } = useAuth();
   const { signOut } = useClerk();
   
+  const theme = propTheme || Colors.light; 
+
   const [transactions, setTransactions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -61,10 +65,9 @@ export default function HomeScreen({ onNavigateToAdd, onNavigateToHistory, onNav
         .from('transactions')
         .select('*')
         .order('created_at', { ascending: false })
-        .limit(4); // Limit to 4
+        .limit(100); // Increased limit to fetch enough data for charts
 
       if (error) throw error;
-
       setTransactions(data || []);
     } catch (err) {
       console.error('Error fetching transactions:', err);
@@ -183,7 +186,7 @@ export default function HomeScreen({ onNavigateToAdd, onNavigateToHistory, onNav
           }]} />
         </TouchableWithoutFeedback>
         
-        <Animated.View style={[styles.sidebarContainer, { transform: [{ translateX: sidebarAnim }], backgroundColor: theme.background }]}>
+        <Animated.View style={[styles.sidebarContainer, { transform: [{ translateX: sidebarAnim }], backgroundColor: theme.card }]}>
           <View style={[styles.sidebarHeader, { backgroundColor: theme.primary }]}>
              <TouchableOpacity style={styles.sidebarMenuButton} onPress={() => toggleSidebar(false)}>
                 <SimpleLineIcons name='menu' size={24} color='black' />
@@ -244,7 +247,9 @@ export default function HomeScreen({ onNavigateToAdd, onNavigateToHistory, onNav
     </View>
   );
 
-  const Header = () => (
+  const isDark = theme.primary === '#4A3780'; // Simplistic dark mode check based on primary color used as proxy if not passed explicitly, or define helper.
+
+  const renderHeader = (
     <View style={styles.headerContainer}>
       <View style={styles.greetingContainer}>
         {/* Dynamic Name */}
@@ -254,24 +259,20 @@ export default function HomeScreen({ onNavigateToAdd, onNavigateToHistory, onNav
         <Text style={[styles.subGreetingText, { color: theme.text }]}>Here is your spending overview</Text>
       </View>
 
-      <View style={[styles.chartPlaceholder, { backgroundColor: theme.card }]} />
+      {/* Replaced Chart Placeholder with Actual Chart */}
+      <SpendingChart transactions={transactions} theme={theme} />
 
       <View style={styles.listHeaderRow}>
         <Text style={[styles.sectionTitle, { color: theme.secondary }]}>Recent Transactions:</Text>
-        
-        {/* View More Button */}
-        <TouchableOpacity 
-           style={[styles.filterButton, { borderColor: theme.secondary }]}
-           onPress={onNavigateToHistory}
-        >
+        <TouchableOpacity style={[styles.filterButton, { borderColor: theme.secondary }]} onPress={onNavigateToHistory}>
           <Text style={{ color: theme.secondary }}>View More</Text>
         </TouchableOpacity>
       </View>
 
-      <View style={[styles.columnHeaderRow, { borderColor: theme.secondary, backgroundColor: theme.card }]}>
-        <Text style={[styles.columnHeaderText, { flex: 2, textAlign: 'center', color: theme.text }]}>Name</Text>
-        <Text style={[styles.columnHeaderText, { flex: 2, textAlign: 'center', color: theme.text }]}>Category</Text>
-        <Text style={[styles.columnHeaderText, { flex: 1, textAlign: 'center', color: theme.text }]}>Cost</Text>
+      <View style={[styles.columnHeaderRow, { borderColor: theme.secondary }]}>
+        <Text style={[styles.columnHeaderText, { flex: 2, textAlign: 'center' }]}>Name</Text>
+        <Text style={[styles.columnHeaderText, { flex: 2, textAlign: 'center' }]}>Category</Text>
+        <Text style={[styles.columnHeaderText, { flex: 1, textAlign: 'center' }]}>Cost</Text>
       </View>
     </View>
   );
@@ -284,24 +285,24 @@ export default function HomeScreen({ onNavigateToAdd, onNavigateToHistory, onNav
       {...panResponder.panHandlers}
     >
       {renderSidebar()}
-      
-      <SafeAreaView style={{ flex: 1 }} edges={['top', 'left', 'right']}>
-        <StatusBar barStyle='dark-content' />
-        
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]} edges={['top']}>
+        <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
         <View style={[styles.navBar, { backgroundColor: theme.primary }]}>
           <TouchableOpacity style={styles.menuButton} onPress={() => toggleSidebar(true)}>
             <SimpleLineIcons name='menu' size={24} color='black' />
           </TouchableOpacity>
-          <Image source={icon} style={styles.navIcon} resizeMode='contain' />
+          <View style={styles.navIconContainer}>
+             <Image source={logo} style={styles.navIcon} resizeMode='contain' />
+          </View>
           <View style={{ width: 24 }} /> 
         </View>
 
-        <View style={{ flex: 1, backgroundColor: theme.background }}>
+        <View style={{ flex: 1, zIndex: 1 }}>
           <FlatList
-            data={transactions}
+            data={transactions.slice(0, 4)} // Only slice for the list, keep full data for chart
             renderItem={renderTransaction}
             keyExtractor={(item) => item.id}
-            ListHeaderComponent={Header}
+            ListHeaderComponent={renderHeader}
             ListFooterComponent={Footer} 
             contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}
@@ -329,13 +330,16 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   navBar: { height: 80, marginTop: 0, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, width: '100%' },
   menuButton: { padding: 5 },
+  navIconContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   navIcon: { height: 60, width: 200 },
-  listContent: { paddingBottom: 100 },
+  listContent: {
+    // Increase padding bottom since we now have two large charts + list
+    paddingBottom: 200, 
+  },
   headerContainer: { paddingHorizontal: 20, paddingTop: 20 },
   greetingContainer: { marginBottom: 20 },
   greetingText: { fontSize: 24, fontWeight: 'bold', fontFamily: 'Poppins_700Bold' },
   subGreetingText: { fontSize: 14, marginTop: 4 },
-  chartPlaceholder: { height: 200, width: '100%', backgroundColor: '#D3D3D3', marginBottom: 20 },
   listHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
   sectionTitle: { fontSize: 20, fontWeight: 'bold', fontFamily: 'Poppins_700Bold' },
   filterButton: { borderWidth: 1, borderRadius: 20, paddingHorizontal: 20, paddingVertical: 5 },
