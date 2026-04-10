@@ -12,6 +12,7 @@
     "@clerk/clerk-expo": "^2.19.30",
     "@expo-google-fonts/poppins": "^0.4.1",
     "@expo/vector-icons": "^15.1.1",
+    "@google/generative-ai": "^0.24.1",
     "@supabase/supabase-js": "^2.99.2",
     "expo": "~54.0.33",
     "expo-auth-session": "~7.0.10",

@@ -24,9 +24,11 @@ interface SettingsScreenProps {
   theme: any;
   toggleTheme: () => void;
   isDarkMode: boolean;
+  aiSpecificity: 'Broad' | 'Normal' | 'Specific';
+  setAiSpecificity: (value: 'Broad' | 'Normal' | 'Specific') => void;
 }
 
-export default function SettingsScreen({ onNavigateHome, onNavigateToHistory, theme, toggleTheme, isDarkMode }: SettingsScreenProps) {
+export default function SettingsScreen({ onNavigateHome, onNavigateToHistory, theme, toggleTheme, isDarkMode, aiSpecificity, setAiSpecificity }: SettingsScreenProps) {
   const { signOut } = useClerk();
   const sidebarAnim = useRef(new Animated.Value(-SIDEBAR_WIDTH)).current; 
   const isSidebarOpenRef = useRef(false);
@@ -210,6 +212,36 @@ export default function SettingsScreen({ onNavigateHome, onNavigateToHistory, th
           <TouchableOpacity style={[styles.button, { borderColor: theme.secondary, borderWidth: 1 }]}>
              <Text style={[styles.buttonText, { color: theme.secondary }]}>Change Password</Text>
           </TouchableOpacity>
+
+          <Text style={[styles.sectionTitle, { color: theme.secondary, marginTop: 20 }]}>AI Specificity:</Text>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '100%', marginBottom: 15 }}>
+            {(['Broad', 'Normal', 'Specific'] as const).map((level) => (
+              <TouchableOpacity
+                key={level}
+                style={[
+                  styles.button,
+                  {
+                    flex: 1,
+                    marginHorizontal: 5,
+                    marginBottom: 0,
+                    backgroundColor: aiSpecificity === level ? theme.secondary : 'transparent',
+                    borderColor: theme.secondary,
+                    borderWidth: 1,
+                  },
+                ]}
+                onPress={() => setAiSpecificity(level)}
+              >
+                <Text
+                  style={[
+                    styles.buttonText,
+                    { color: aiSpecificity === level ? '#FFF' : theme.secondary },
+                  ]}
+                >
+                  {level}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
 
         </View>
       </View>

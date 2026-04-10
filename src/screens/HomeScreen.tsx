@@ -197,7 +197,7 @@ export default function HomeScreen({ onNavigateToAdd, onNavigateToHistory, onNav
              </View>
           </View>
           
-          <View style={styles.sidebarContent}>
+          <View style={[styles.sidebarContent, { backgroundColor: theme.background }]}>
             {['Home', 'History', 'Recap', 'Settings', 'Log Out'].map((item, index) => (
               <TouchableOpacity 
                 key={index} 

@@ -20,10 +20,11 @@ import { SimpleLineIcons, Ionicons } from '@expo/vector-icons';
 import Colors from '../constants/Colors';
 import { useAuth, useUser, useClerk } from '@clerk/clerk-expo';
 import { createAuthenticatedSupabaseClient } from '../lib/supabase';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const logo = require('../../assets/BudgetAI_BWTransparent.png');
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get('window');   
 const SIDEBAR_WIDTH = width * 0.75;
 
 interface AddTransactionScreenProps {
@@ -31,9 +32,10 @@ interface AddTransactionScreenProps {
   onNavigateToHistory?: () => void;
   onNavigateToSettings?: () => void;
   theme: any;
+  aiSpecificity: 'Broad' | 'Normal' | 'Specific';
 }
 
-export default function AddTransactionScreen({ onNavigateHome, onNavigateToHistory, onNavigateToSettings, theme }: AddTransactionScreenProps) {
+export default function AddTransactionScreen({ onNavigateHome, onNavigateToHistory, onNavigateToSettings, theme, aiSpecificity }: AddTransactionScreenProps) {
   const { user } = useUser();
   const { getToken } = useAuth();
   const { signOut } = useClerk();
@@ -171,7 +173,7 @@ export default function AddTransactionScreen({ onNavigateHome, onNavigateToHisto
              </View>
           </View>
           
-          <View style={styles.sidebarContent}>
+          <View style={[styles.sidebarContent, { backgroundColor: theme.background }]}>
             {['Home', 'History', 'Recap', 'Settings', 'Log Out'].map((item, index) => (
               <TouchableOpacity 
                 key={index} 
@@ -235,9 +237,69 @@ export default function AddTransactionScreen({ onNavigateHome, onNavigateToHisto
       
       const supabase = createAuthenticatedSupabaseClient(token);
       
-      // If AI is selected, we could technically call an AI service here.
-      // For now, if AI is on, we'll default to 'Uncategorized' or implement AI logic later.
-      const finalCategory = useAI ? 'AI Categorized' : category;
+      let finalCategory = category;
+
+      // 🤖 --- AI CATEGORIZATION LOGIC --- 🤖
+      if (useAI) {
+        try {
+          // 1. Fetch user's existing unique categories for context
+          const { data: existingData } = await supabase
+            .from('transactions')
+            .select('category');
+          
+          const existingCategories = existingData 
+            ? [...new Set(existingData.map(t => t.category).filter(Boolean))] 
+            : [];
+
+          // 2. Formulate the strict prompt so Gemini knows exactly what to do
+          const specificityInstructions = 
+            aiSpecificity === 'Broad' ? "Create a very broad, general category (e.g., 'Food', 'Transportation', 'Entertainment')." :
+            aiSpecificity === 'Specific' ? "Create a very specific, detailed category based on the exact item or store (e.g., 'Fast Food', 'Gas Station', 'Movie Tickets')." :
+            "Create a moderately specific category that balances general grouping with some detail.";
+
+          const prompt = `You are a financial categorizer. The user just purchased "${name}" for $${cost}. Their existing financial categories are: [${existingCategories.join(', ')}]. 
+          Task: Pick the best matching existing category from the list. If none perfectly fit, generate a new, concise category name (maximum 2-3 words, Title Case). 
+          Specificity Preference: ${specificityInstructions}
+          Constraint: Reply ONLY with the exact exact category name string, no punctuation, no conversational filler.`;
+
+          // 3. Call Gemini using a raw fetch request (Bypasses React Native SDK polyfill issues)
+          const apiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
+          
+          if (!apiKey) {
+             throw new Error("Missing Gemini API Key");
+          }
+
+          const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              contents: [{
+                parts: [{ text: prompt }]
+              }],
+              generationConfig: {
+                temperature: 0.2
+              }
+            })
+          });
+
+          const aiData = await response.json();
+          
+          if (aiData.error) {
+             throw new Error(aiData.error.message || "Unknown Gemini Error");
+          }
+
+          const generatedCategory = aiData.candidates[0].content.parts[0].text.replace(/["'\n]/g, "").trim();
+          
+          finalCategory = generatedCategory || 'Uncategorized';
+        } catch (aiError: any) {
+          console.error("AI Error:", aiError);
+          // Alert the user so they can see the exact error if it fails again
+          Alert.alert("AI Categorization Failed", aiError.message);
+          finalCategory = 'Manual Review Required'; 
+        }
+      }
 
       const { error } = await supabase.from('transactions').insert({
          user_id: user?.id,
@@ -354,6 +416,9 @@ export default function AddTransactionScreen({ onNavigateHome, onNavigateToHisto
                   <Text style={styles.aiInfoText}>
                     Our AI will analyze your transaction details to automatically select the best category for you.
                   </Text>
+                  <Text style={[styles.aiInfoText, { marginTop: 4, fontStyle: 'italic' }]}>
+                    Customize in Settings
+                  </Text>
                 </View>
               )}
 
@@ -384,24 +449,24 @@ export default function AddTransactionScreen({ onNavigateHome, onNavigateToHisto
             </View>
 
             {/* Header Row */}
-             <View style={[styles.recentItemContainer, { borderColor: theme.secondary, backgroundColor: '#f0f0f0' }]}>
+             <View style={[styles.recentItemContainer, { borderColor: theme.secondary, backgroundColor: theme.card }]}>
                   <View style={styles.recentItemContent}>
-                    <Text style={[styles.recentItemText, { fontWeight: 'bold' }]}>Name</Text>
-                    <Text style={[styles.recentItemText, { fontWeight: 'bold' }]}>Category</Text>
-                    <Text style={[styles.recentItemText, { fontWeight: 'bold' }]}>Cost</Text>
+                    <Text style={[styles.recentItemText, { fontWeight: 'bold', color: theme.text }]}>Name</Text>
+                    <Text style={[styles.recentItemText, { fontWeight: 'bold', color: theme.text }]}>Category</Text>
+                    <Text style={[styles.recentItemText, { fontWeight: 'bold', color: theme.text }]}>Cost</Text>
                   </View>
              </View>
 
             {/* Dynamic Data Rows */}
             {recentTransactions.map((item) => (
-              <View key={item.id} style={[styles.recentItemContainer, { borderColor: theme.secondary }]}>
+              <View key={item.id} style={[styles.recentItemContainer, { borderColor: theme.secondary, backgroundColor: theme.card }]}>
                   <View style={styles.recentItemContent}>
-                    <Text style={[styles.recentItemText, { flex: 1 }]} numberOfLines={1}>{item.name}</Text>
-                    <Text style={[styles.recentItemText, { flex: 1, textAlign: 'center' }]} numberOfLines={1}>{item.category || '-'}</Text>
-                    <Text style={[styles.recentItemText, { flex: 1, textAlign: 'right' }]}>${item.amount?.toFixed(2)}</Text>
+                    <Text style={[styles.recentItemText, { flex: 1, color: theme.text }]} numberOfLines={1}>{item.name}</Text>
+                    <Text style={[styles.recentItemText, { flex: 1, textAlign: 'center', color: theme.text }]} numberOfLines={1}>{item.category || '-'}</Text>
+                    <Text style={[styles.recentItemText, { flex: 1, textAlign: 'right', color: theme.text }]}>${item.amount?.toFixed(2)}</Text>
                   </View>
                 
-                  <TouchableOpacity style={styles.deleteCircle} onPress={() => handleDelete(item.id)}>
+                  <TouchableOpacity style={[styles.deleteCircle, { borderColor: theme.card }]} onPress={() => handleDelete(item.id)}>
                      <Ionicons name="close" size={12} color="white" />
                   </TouchableOpacity>
               </View>
