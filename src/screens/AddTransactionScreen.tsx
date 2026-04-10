@@ -16,7 +16,8 @@ import {
   ActivityIndicator
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { SimpleLineIcons, Ionicons } from '@expo/vector-icons';
+import { SimpleLineIcons, Ionicons, Feather } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import Colors from '../constants/Colors';
 import { useAuth, useUser, useClerk } from '@clerk/clerk-expo';
 import { createAuthenticatedSupabaseClient } from '../lib/supabase';
@@ -42,6 +43,7 @@ export default function AddTransactionScreen({ onNavigateHome, onNavigateToHisto
   
   const [useAI, setUseAI] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [cameraLoading, setCameraLoading] = useState(false);
   const [recentTransactions, setRecentTransactions] = useState<any[]>([]);
   const [showAIInfo, setShowAIInfo] = useState(false);
   const [name, setName] = useState('');
@@ -330,6 +332,108 @@ export default function AddTransactionScreen({ onNavigateHome, onNavigateToHisto
     }
   };
 
+  const handleCameraScan = async () => {
+    try {
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission Denied', 'Camera access is required to scan receipts.');
+        return;
+      }
+
+      const result = await ImagePicker.launchCameraAsync({
+         mediaTypes: 'images',
+         allowsEditing: true,
+         quality: 0.7,
+         base64: true
+      });
+
+      if (result.canceled || !result.assets || !result.assets[0].base64) {
+         return;
+      }
+
+      setCameraLoading(true);
+
+      const base64Image = result.assets[0].base64;
+      const apiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
+      
+      if (!apiKey) {
+         throw new Error("Missing Gemini API Key");
+      }
+
+      // Call Gemini for Image Analysis
+      const prompt = `You are a receipt extraction AI. Analyze the image to find any purchased items and their prices.
+      If it's a receipt with multiple items, return a JSON array of objects, EACH with a 'name', 'amount' (number), and a generated 'category' (string).
+      If it's a single item with a price tag, return a JSON array with one object containing 'name', 'amount', and 'category'.
+      If you CANNOT find an identifiable object with a price or a receipt, return {"error": "Could not identify an item or price from the image."}.
+      DO NOT return markdown code blocks, ONLY valid JSON.
+      `;
+
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`, {
+         method: 'POST',
+         headers: { 'Content-Type': 'application/json' },
+         body: JSON.stringify({
+            contents: [{
+               parts: [
+                  { text: prompt },
+                  { inlineData: { mimeType: 'image/jpeg', data: base64Image } }
+               ]
+            }],
+            generationConfig: { temperature: 0.1 }
+         })
+      });
+
+      const aiData = await response.json();
+      if (aiData.error) {
+         throw new Error(aiData.error.message || "Unknown Gemini Error");
+      }
+
+      let rawText = aiData.candidates[0].content.parts[0].text;
+      // Strip markdown codeblocks if Gemini added them
+      rawText = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
+      
+      let parsedData;
+      try {
+         parsedData = JSON.parse(rawText);
+      } catch (e) {
+         throw new Error("AI returned invalid data format.");
+      }
+
+      if (parsedData.error) {
+         throw new Error(parsedData.error);
+      }
+
+      const items = Array.isArray(parsedData) ? parsedData : [parsedData];
+      
+      if (!items.length || !items[0].name || items[0].amount === undefined) {
+         throw new Error("Could not extract valid item and price data from image.");
+      }
+
+      const token = await getToken({ template: 'supabase' });
+      if (!token) throw new Error("Could not authenticate with database.");
+      
+      const supabase = createAuthenticatedSupabaseClient(token);
+
+      for (const item of items) {
+         const { error } = await supabase.from('transactions').insert({
+            user_id: user?.id,
+            name: item.name,
+            amount: parseFloat(item.amount),
+            category: item.category || 'Uncategorized',
+         });
+         if (error) throw error;
+      }
+
+      Alert.alert('Scan Complete', `Successfully added ${items.length} transaction(s).`);
+      await fetchRecentTransactions();
+
+    } catch (error: any) {
+       console.error("Camera Scan Error:", error);
+       Alert.alert("Scan Error", error.message || "An error occurred while scanning.");
+    } finally {
+       setCameraLoading(false);
+    }
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: theme.primary }}>
       {renderSidebar()}
@@ -422,17 +526,31 @@ export default function AddTransactionScreen({ onNavigateHome, onNavigateToHisto
                 </View>
               )}
 
-              <TouchableOpacity 
-                style={[styles.addButton, { backgroundColor: theme.secondary }]}
-                onPress={handleAddTransaction}
-                disabled={loading}
-              >
-                {loading ? (
-                   <ActivityIndicator color="white" />
-                ) : (
-                   <Text style={styles.addButtonText}>Add</Text>
-                )}
-              </TouchableOpacity>
+              <View style={styles.actionRowContainer}>
+                <TouchableOpacity 
+                  style={[styles.cameraButton, { backgroundColor: 'transparent', borderColor: theme.secondary }]}
+                  onPress={handleCameraScan}
+                  disabled={cameraLoading}
+                >
+                  {cameraLoading ? (
+                     <ActivityIndicator color={theme.secondary} />
+                  ) : (
+                     <Feather name="camera" size={24} color={theme.text} />
+                  )}
+                </TouchableOpacity>
+
+                <TouchableOpacity 
+                  style={[styles.addButton, { backgroundColor: theme.secondary, flex: 1, marginLeft: 15 }]}
+                  onPress={handleAddTransaction}
+                  disabled={loading}
+                >
+                  {loading ? (
+                     <ActivityIndicator color="white" />
+                  ) : (
+                     <Text style={styles.addButtonText}>Add</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
             </View>
 
             {/* Recent Transactions Section */}
@@ -541,6 +659,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 4,
+  },
+  actionRowContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  cameraButton: {
+    width: 60,
+    height: 40,
+    borderRadius: 8,
+    borderWidth: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   addButton: {
     alignSelf: 'flex-end',
