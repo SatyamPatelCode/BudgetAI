@@ -321,9 +321,6 @@ export default function AddTransactionScreen({ onNavigateHome, onNavigateToHisto
       setCost('');
       setCategory('');
       
-      // Optional: Inform user briefly or just show it in the list
-      // Alert.alert('Success', 'Transaction added'); 
-
     } catch (error: any) {
       console.error(error);
       Alert.alert('Error', error.message || 'Failed to add transaction');
@@ -346,6 +343,7 @@ export default function AddTransactionScreen({ onNavigateHome, onNavigateToHisto
          quality: 0.7,
          base64: true
       });
+
 
       if (result.canceled || !result.assets || !result.assets[0].base64) {
          return;
@@ -676,10 +674,13 @@ const styles = StyleSheet.create({
   },
   addButton: {
     alignSelf: 'flex-end',
+    flex: 1,
+    marginLeft: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 50,
     paddingHorizontal: 30,
-    paddingVertical: 10,
     borderRadius: 8,
-    marginTop: 10,
   },
   addButtonText: {
     color: 'white',
