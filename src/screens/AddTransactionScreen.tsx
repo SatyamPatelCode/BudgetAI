@@ -17,11 +17,11 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SimpleLineIcons, Ionicons, Feather } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import Colors from '../constants/Colors';
 import { useAuth, useUser, useClerk } from '@clerk/clerk-expo';
 import { createAuthenticatedSupabaseClient } from '../lib/supabase';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import * as ImagePicker from 'expo-image-picker';
 
 const logo = require('../../assets/BudgetAI_BWTransparent.png');
 
@@ -338,13 +338,13 @@ export default function AddTransactionScreen({ onNavigateHome, onNavigateToHisto
       }
 
       const result = await ImagePicker.launchCameraAsync({
-         mediaTypes: 'images', // Use predefined string literal instead of MediaTypeOptions since TS complains about enum in some versions without right imports
+         mediaTypes: 'images',
          allowsEditing: true,
          quality: 0.7,
          base64: true
       });
 
-      // Using alternative check to avoid TS errors
+
       if (result.canceled || !result.assets || !result.assets[0].base64) {
          return;
       }
@@ -538,7 +538,7 @@ export default function AddTransactionScreen({ onNavigateHome, onNavigateToHisto
                 </TouchableOpacity>
 
                 <TouchableOpacity 
-                  style={[styles.addButton, { backgroundColor: theme.secondary }]}
+                  style={[styles.addButton, { backgroundColor: theme.secondary, flex: 1, marginLeft: 15 }]}
                   onPress={handleAddTransaction}
                   disabled={loading}
                 >
@@ -666,7 +666,7 @@ const styles = StyleSheet.create({
   },
   cameraButton: {
     width: 60,
-    height: 50,
+    height: 40,
     borderRadius: 8,
     borderWidth: 1,
     justifyContent: 'center',
