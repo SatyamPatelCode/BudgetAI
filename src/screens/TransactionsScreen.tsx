@@ -314,43 +314,48 @@ export default function TransactionsScreen({ onNavigateHome, onNavigateToAdd, on
             <TouchableWithoutFeedback onPress={() => setFilterModalVisible(false)}>
               <View style={styles.modalBackdrop} />
             </TouchableWithoutFeedback>
-            <View style={styles.modalContainer}>
-              <Text style={[styles.modalTitle, { color: theme.text }]}>Filter Transactions</Text>
+            
+            <View style={[styles.modalContainer, { backgroundColor: theme.card, borderWidth: 1, borderColor: theme.secondary, padding: 16 }]}>
+              <TouchableOpacity onPress={() => setFilterModalVisible(false)} style={{ position: 'absolute', top: 16, left: 16, zIndex: 10 }}>
+                <Ionicons name="close" size={24} color={theme.secondary} />
+              </TouchableOpacity>
+              
+              <Text style={[styles.modalTitle, { color: theme.secondary, fontSize: 20, textAlign: 'center', marginBottom: 5 }]}>Filter Transactions</Text>
 
-              <Text style={{ color: theme.textSecondary, marginTop: 8 }}>Sort By</Text>
-              {[
-                { key: 'none', label: 'None' },
-                { key: 'amountAsc', label: 'Amount: Low → High' },
-                { key: 'amountDesc', label: 'Amount: High → Low' },
-                { key: 'nameAsc', label: 'Name: A → Z' },
-                { key: 'nameDesc', label: 'Name: Z → A' },
-                { key: 'dateNew', label: 'Date: Newest First' },
-                { key: 'dateOld', label: 'Date: Oldest First' }
-              ].map(opt => (
-                <TouchableOpacity key={opt.key} style={[styles.modalOption, filterOption === opt.key ? { backgroundColor: theme.primary } : null]} onPress={() => setFilterOption(opt.key as any)}>
-                  <Text style={{ color: filterOption === opt.key ? 'white' : theme.text }}>{opt.label}</Text>
-                </TouchableOpacity>
-              ))}
+                <Text style={{ color: theme.secondary, marginTop: 8, fontWeight: '700', fontSize: 16 }}>Sort By</Text>
+                {[
+                  { key: 'none', label: 'None' },
+                  { key: 'amountAsc', label: 'Amount: Low → High' },
+                  { key: 'amountDesc', label: 'Amount: High → Low' },
+                  { key: 'nameAsc', label: 'Name: A → Z' },
+                  { key: 'nameDesc', label: 'Name: Z → A' },
+                  { key: 'dateNew', label: 'Date: Newest First' },
+                  { key: 'dateOld', label: 'Date: Oldest First' }
+                ].map(opt => (
+                  <TouchableOpacity key={opt.key} style={[styles.modalOption, filterOption === opt.key ? { backgroundColor: theme.secondary } : null, { borderWidth: 1, borderColor: theme.secondary }]} onPress={() => setFilterOption(opt.key as any)}>
+                    <Text style={{ color: filterOption === opt.key ? 'white' : theme.primary, fontWeight: filterOption === opt.key ? 'bold' : 'normal' }}>{opt.label}</Text>
+                  </TouchableOpacity>
+                ))}
 
-              <Text style={{ color: theme.textSecondary, marginTop: 12 }}>Minimum Amount (optional)</Text>
-              <TextInput
-                value={minAmount}
-                onChangeText={setMinAmount}
-                placeholder="$0.00"
-                placeholderTextColor={theme.textSecondary}
-                keyboardType='numeric'
-                style={[styles.input, { marginTop: 8, borderColor: theme.border || '#E5E5E5' }]}
-              />
+                <Text style={{ color: theme.secondary, marginTop: 16, fontWeight: '700', fontSize: 16 }}>Minimum Amount (optional)</Text>
+                <TextInput
+                  value={minAmount}
+                  onChangeText={setMinAmount}
+                  placeholder="$0.00"
+                  placeholderTextColor={theme.textSecondary}
+                  keyboardType='numeric'
+                  style={[styles.input, { marginTop: 8, borderColor: theme.secondary, color: theme.primary, backgroundColor: theme.background, fontWeight: 'bold' }]}
+                />
 
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 16 }}>
-                <TouchableOpacity style={[styles.modalButton, { backgroundColor: '#eee' }]} onPress={() => { resetFilters(); applyFilterAndClose(); }}>
-                  <Text>Reset</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={[styles.modalButton, { backgroundColor: theme.primary }]} onPress={() => applyFilterAndClose()}>
-                  <Text style={{ color: 'white' }}>Apply</Text>
-                </TouchableOpacity>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 20 }}>
+                  <TouchableOpacity style={[styles.modalButton, { backgroundColor: theme.background, borderWidth: 1, borderColor: theme.secondary }]} onPress={() => { resetFilters(); applyFilterAndClose(); }}>
+                    <Text style={{ color: theme.secondary, fontWeight: '600' }}>Reset</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={[styles.modalButton, { backgroundColor: theme.secondary }]} onPress={() => applyFilterAndClose()}>
+                    <Text style={{ color: 'white', fontWeight: 'bold' }}>Apply</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-            </View>
           </Modal>
 
           <TouchableOpacity 
