@@ -565,11 +565,11 @@ export default function AddTransactionScreen({ onNavigateHome, onNavigateToHisto
             </View>
 
             {/* Header Row */}
-             <View style={[styles.recentItemContainer, { borderColor: theme.secondary, backgroundColor: theme.card }]}>
+             <View style={[styles.recentItemContainer, { borderColor: theme.secondary, backgroundColor: 'transparent' }]}>
                   <View style={styles.recentItemContent}>
-                    <Text style={[styles.recentItemText, { fontWeight: 'bold', color: theme.text }]}>Name</Text>
-                    <Text style={[styles.recentItemText, { fontWeight: 'bold', color: theme.text }]}>Category</Text>
-                    <Text style={[styles.recentItemText, { fontWeight: 'bold', color: theme.text }]}>Cost</Text>
+                    <Text style={[styles.recentItemText, { fontWeight: 'bold', color: theme.secondary }]}>Name</Text>
+                    <Text style={[styles.recentItemText, { fontWeight: 'bold', color: theme.secondary }]}>Category</Text>
+                    <Text style={[styles.recentItemText, { fontWeight: 'bold', color: theme.secondary }]}>Cost</Text>
                   </View>
              </View>
 
