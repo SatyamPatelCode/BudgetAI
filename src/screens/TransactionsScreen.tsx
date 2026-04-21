@@ -362,7 +362,7 @@ export default function TransactionsScreen({ onNavigateHome, onNavigateToAdd, on
             style={[styles.fab, { backgroundColor: theme.secondary }]}
             onPress={onNavigateToAdd}
            >
-            <Image source={require('../../assets/plus.png')} style={{ width: 24, height: 24, tintColor: 'white' }} />
+            <Ionicons name="add" size={24} color="white" />
           </TouchableOpacity>
 
           <View style={[styles.bottomBar, { backgroundColor: theme.primary }]} />
