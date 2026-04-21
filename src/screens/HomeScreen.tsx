@@ -270,9 +270,9 @@ export default function HomeScreen({ onNavigateToAdd, onNavigateToHistory, onNav
       </View>
 
       <View style={[styles.columnHeaderRow, { borderColor: theme.secondary }]}>
-        <Text style={[styles.columnHeaderText, { flex: 2, textAlign: 'center' }]}>Name</Text>
-        <Text style={[styles.columnHeaderText, { flex: 2, textAlign: 'center' }]}>Category</Text>
-        <Text style={[styles.columnHeaderText, { flex: 1, textAlign: 'center' }]}>Cost</Text>
+        <Text style={[styles.columnHeaderText, { flex: 2, textAlign: 'center', color: theme.secondary }]}>Name</Text>
+        <Text style={[styles.columnHeaderText, { flex: 2, textAlign: 'center', color: theme.secondary }]}>Category</Text>
+        <Text style={[styles.columnHeaderText, { flex: 1, textAlign: 'center', color: theme.secondary }]}>Cost</Text>
       </View>
     </View>
   );
@@ -343,8 +343,8 @@ const styles = StyleSheet.create({
   listHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
   sectionTitle: { fontSize: 20, fontWeight: 'bold', fontFamily: 'Poppins_700Bold' },
   filterButton: { borderWidth: 1, borderRadius: 20, paddingHorizontal: 20, paddingVertical: 5 },
-  columnHeaderRow: { flexDirection: 'row', paddingVertical: 10, borderWidth: 1, borderRadius: 12, marginBottom: 10, backgroundColor: 'white', alignItems: 'center' },
-  columnHeaderText: { fontSize: 16, fontWeight: '600', color: 'black' },
+  columnHeaderRow: { flexDirection: 'row', paddingVertical: 10, borderWidth: 1, borderRadius: 12, marginBottom: 10, backgroundColor: 'transparent', alignItems: 'center' },
+  columnHeaderText: { fontSize: 16, fontWeight: '600' },
   transactionRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 16, paddingHorizontal: 10, marginHorizontal: 20, marginBottom: 10, borderRadius: 12, borderWidth: 1, backgroundColor: 'white' },
   deleteButton: { position: 'absolute', top: -10, right: -10, zIndex: 1, backgroundColor: 'white', borderRadius: 10 },
   colName: { flex: 2, alignItems: 'center' },
