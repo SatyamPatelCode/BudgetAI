@@ -235,6 +235,12 @@ export default function TransactionsScreen({ onNavigateHome, onNavigateToAdd, on
                 <Text style={styles.sidebarButtonText}>{item}</Text>
               </TouchableOpacity>
             ))}
+
+            {/* Credits Section */}
+            <View style={{ marginTop: 'auto', alignItems: 'center', paddingBottom: 20 }}>
+              <Text style={{ color: theme.textSecondary, fontSize: 12, marginBottom: 4 }}>Created by Satyam Patel & Emmanuel Usman</Text>
+              <Text style={{ color: theme.textSecondary, fontSize: 12, fontWeight: 'bold' }}>A RCOS Project</Text>
+            </View>
           </View>
         </Animated.View>
       </View>
