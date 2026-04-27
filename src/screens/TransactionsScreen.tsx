@@ -241,6 +241,23 @@ export default function TransactionsScreen({ onNavigateHome, onNavigateToAdd, on
     );
   };
 
+  const handleDelete = async (id: string) => {
+    try {
+      const token = await getToken({ template: 'supabase' });
+      if (!token) return;
+      
+      const supabase = createAuthenticatedSupabaseClient(token);
+      const { error } = await supabase.from('transactions').delete().eq('id', id);
+      
+      if (error) throw error;
+      
+      // Optimistic update
+      setTransactions(prev => prev.filter(t => t.id !== id));
+    } catch (err) {
+      Alert.alert('Error', 'Failed to delete transaction');
+    }
+  };
+
   const renderTransaction = ({ item }: { item: any }) => (
     <View style={[styles.transactionRow, { borderColor: theme.secondary, backgroundColor: theme.card }]}>
       <View style={styles.colName}>
@@ -254,6 +271,10 @@ export default function TransactionsScreen({ onNavigateHome, onNavigateToAdd, on
           ${typeof item.amount === 'number' ? item.amount.toFixed(2) : item.amount}
         </Text>
       </View>
+      
+      <TouchableOpacity style={[styles.deleteCircle, { borderColor: theme.card }]} onPress={() => handleDelete(item.id)}>
+         <Ionicons name="close" size={12} color="white" />
+      </TouchableOpacity>
     </View>
   );
 
@@ -402,9 +423,21 @@ const styles = StyleSheet.create({
   colCategory: { flex: 2, alignItems: 'center' },
   colAmount: { flex: 1, alignItems: 'center' },
   transactionText: { fontSize: 14 },
+  deleteCircle: {
+    position: 'absolute',
+    top: -8,
+    right: -8,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#FF453A',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+  },
   fab: { position: 'absolute', bottom: 80, right: 20, width: 60, height: 60, borderRadius: 30, justifyContent: 'center', alignItems: 'center', zIndex: 10, elevation: 5, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4 },
   bottomBar: { height: 60, width: '100%', position: 'absolute', bottom: 0 },
-  modalBackdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'black' },
+  modalBackdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0, 0, 0, 0.5)' },
   sidebarContainer: { width: SIDEBAR_WIDTH, height: '100%', shadowColor: '#000', shadowOffset: { width: 2, height: 0 }, shadowOpacity: 0.25, shadowRadius: 5, elevation: 5, backgroundColor: 'white', position: 'absolute', left: 0 },
   sidebarHeader: { height: 120, width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingTop: 40, paddingHorizontal: 20, backgroundColor: '#F5F5F5' },
   sidebarMenuButton: { position: 'absolute', left: 20, top: 55, zIndex: 10, padding: 10 },
